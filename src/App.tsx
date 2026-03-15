@@ -1,35 +1,16 @@
-import { Layout, Menu } from 'antd';
-import styled from 'styled-components';
-import Gallery from './gallery/masonry/Gallery';
-
-const { Header, Content } = Layout;
-
-const AppShell = styled(Layout)`
-  min-height: 100vh;
-`;
-
-const GalleryContent = styled(Content)`
-  padding: 24px;
-`;
+import { RouterProvider } from 'react-router-dom';
+import { ThemeProvider } from 'styled-components';
+import { GalleryProvider } from './context/gallery/GalleryContext';
+import { router } from './routes/router';
+import { theme } from './theme';
 
 function App() {
   return (
-    <AppShell>
-      <Header>
-        <Menu
-          theme="dark"
-          mode="horizontal"
-          items={[
-            { key: 'home', label: 'Home' },
-            { key: 'galleries', label: 'My Galleries' },
-            { key: 'favorites', label: 'Favorites' },
-          ]}
-        />
-      </Header>
-      <GalleryContent>
-        <Gallery />
-      </GalleryContent>
-    </AppShell>
+    <ThemeProvider theme={theme}>
+      <GalleryProvider>
+        <RouterProvider router={router} />
+      </GalleryProvider>
+    </ThemeProvider>
   );
 }
 
