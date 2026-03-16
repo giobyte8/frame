@@ -5,6 +5,7 @@ import { GallerySkeleton } from '../components/gallery/GallerySkeleton';
 import AppLayout from './AppLayout';
 
 const LandingPage = lazy(() => import('./LandingPage'));
+const GalleryPage = lazy(() => import('./GalleryPage'));
 const MasonryGalleryPage = lazy(() => import('./MasonryGalleryPage'));
 
 function withSuspense(node: ReactNode): ReactNode {
@@ -19,6 +20,10 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: withSuspense(<LandingPage />),
+      },
+      {
+        path: 'gallery/:folderId',
+        element: withSuspense(<GalleryPage />),
       },
       {
         path: 'masonry',

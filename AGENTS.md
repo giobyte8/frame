@@ -16,7 +16,9 @@ remote image galleries organized across multiple folders
 
 ## 3. Tech Stack Specifics & Best Practices
 
-### Styled Components
+### Style and Styled Components
+- Always use components from 'antd' design system and just fallback to define
+  custom styled component when 'antd' is not enough.
 - Define a `theme.ts` for colors and spacing.
 - Use the `styled.div` syntax.
 - **Naming:** Prefix styled components with `S.` (e.g., `<S.GalleryWrapper>`)
