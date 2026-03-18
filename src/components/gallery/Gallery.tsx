@@ -1,11 +1,17 @@
 import { Alert, Empty, Skeleton } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
+import { DirectoriesGrid } from '../directories/DirectoriesGrid';
+import { useDirectories } from '../../hooks/useDirectories';
 import { useGalleryImages } from "../../hooks/useGalleryImages";
 import { thumbsFor, ThumbWidth } from "../../services/thumbSvc";
-import type { ImageModel, UUID } from "../../types/api";
+import type { Image, UUID } from "../../types/api";
 
 const S = {
+  Wrapper: styled.div`
+    display: grid;
+    gap: ${({ theme }) => theme.spacing.lg};
+  `,
   Masonry: styled.div`
     column-count: 4;
     column-gap: ${({ theme }) => theme.spacing.md};
@@ -46,42 +52,55 @@ const S = {
 };
 
 interface GalleryProps {
-  folderId: UUID
+  directoryId: UUID
 }
 
 
-const Gallery: React.FC<GalleryProps> = ({ folderId }) => {
-  const { page, isLoading, error } = useGalleryImages(folderId);
+const Gallery: React.FC<GalleryProps> = ({ directoryId }) => {
+  const { page: imagesPage, isLoading: isLoadingImages, error: imagesError } = useGalleryImages(directoryId);
+  const {
+    page: directoriesPage,
+    isLoading: isLoadingDirectories,
+    error: directoriesError,
+  } = useDirectories(directoryId);
 
-  if (isLoading) {
+  if (isLoadingImages || isLoadingDirectories) {
     return <Skeleton active paragraph={{ rows: 10 }} />;
   }
 
-  if (error) {
+  if (imagesError || directoriesError) {
+    const error = imagesError ?? directoriesError;
+
     return <Alert
       type="error"
       showIcon
       title="Error loading gallery"
-      description={error.message}
+      description={error?.message}
     />;
   }
 
-  if (page.content.length === 0) {
+  if (imagesPage.content.length === 0 && directoriesPage.content.length === 0) {
     return <Empty description="No images found for this directory" />;
   }
 
   return (
-    <S.Masonry>
-      {page.content.map((image: ImageModel) => {
-        const thumbnailUri = thumbsFor(image)[ThumbWidth.PX_512];
+    <S.Wrapper>
+      {directoriesPage.content.length > 0 && <DirectoriesGrid directories={directoriesPage.content} />}
 
-        return (
-          <S.Item key={image.contentHash}>
-            <S.Image src={thumbnailUri} alt={image.path} loading="lazy" />
-          </S.Item>
-        );
-      })}
-    </S.Masonry>
+      {imagesPage.content.length > 0 && (
+        <S.Masonry>
+          {imagesPage.content.map((image: Image) => {
+            const thumbnailUri = thumbsFor(image)[ThumbWidth.PX_512];
+
+            return (
+              <S.Item key={image.contentHash}>
+                <S.Image src={thumbnailUri} alt={image.path} loading="lazy" />
+              </S.Item>
+            );
+          })}
+        </S.Masonry>
+      )}
+    </S.Wrapper>
   );
 }
 

@@ -1,5 +1,5 @@
 import { env } from '../config/env';
-import type { ImageModel } from '../types/api';
+import type { Image } from '../types/api';
 
 export const ThumbWidth = {
   PX_256: '256px',
@@ -24,7 +24,7 @@ function trimExtension(path: string): string {
   return path.slice(0, extensionIndex);
 }
 
-export function thumbsFor(image: ImageModel): ThumbUriMap {
+export function thumbsFor(image: Image): ThumbUriMap {
   const baseUrl = stripTrailingSlash(env.estaticoBaseUrl);
   const pathWithoutExtension = trimExtension(image.path);
 

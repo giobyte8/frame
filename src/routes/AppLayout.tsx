@@ -23,14 +23,13 @@ const S = {
 };
 
 const menuItems = [
-  { key: '/', label: 'Grid' },
-  { key: '/masonry', label: 'Masonry' },
+  { key: '/root/', label: '/root/' },
 ];
 
 export default function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const selectedKey = location.pathname === '/masonry' ? '/masonry' : '/';
+  const selectedKey = location.pathname.startsWith('/root') ? '/root/' : '';
 
   return (
     <S.AppShell>
@@ -38,7 +37,7 @@ export default function AppLayout() {
         <Menu
           theme="dark"
           mode="horizontal"
-          selectedKeys={[selectedKey]}
+          selectedKeys={selectedKey ? [selectedKey] : []}
           items={menuItems}
           onClick={({ key }) => {
             navigate(key);

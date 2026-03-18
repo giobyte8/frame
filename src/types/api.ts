@@ -1,9 +1,3 @@
-export interface Folder {
-  id: string;
-  name: string;
-  imageCount: number;
-}
-
 export type UUID = `${string}-${string}-${string}-${string}-${string}`;
 
 export interface Directory {
@@ -16,7 +10,7 @@ export interface Directory {
 
 export type ISODateString = string;
 
-export interface ImageModel {
+export interface Image {
   cameraMaker?: string | null;
   cameraModel?: string | null;
   contentHash: string;
@@ -26,17 +20,6 @@ export interface ImageModel {
   path: string;
   status: string;
   version: number;
-}
-
-export interface ImageMetadata {
-  width: number;
-  height: number;
-}
-
-export interface Image {
-  id: string;
-  url: string;
-  metadata: ImageMetadata;
 }
 
 export interface Page<T> {

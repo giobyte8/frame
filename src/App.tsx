@@ -1,7 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
-import { GalleryProvider } from './context/gallery/GalleryContext';
 import { router } from './routes/router';
 import { theme } from './theme';
 
@@ -11,9 +10,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={theme}>
-        <GalleryProvider>
-          <RouterProvider router={router} />
-        </GalleryProvider>
+        <RouterProvider router={router} />
       </ThemeProvider>
     </QueryClientProvider>
   );

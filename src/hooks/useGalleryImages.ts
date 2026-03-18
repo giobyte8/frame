@@ -1,14 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchImages } from '../api/images';
-import type { ImageModel, Page, UUID } from '../types/api';
+import type { Image, Page, UUID } from '../types/api';
 
 interface UseGalleryImagesResult {
-  page: Page<ImageModel>;
+  page: Page<Image>;
   isLoading: boolean;
   error: Error | null;
 }
 
-const EMPTY_PAGE: Page<ImageModel> = {
+const EMPTY_PAGE: Page<Image> = {
   content: [],
   pageIdx: 0,
   pageSize: 0,
@@ -16,11 +16,11 @@ const EMPTY_PAGE: Page<ImageModel> = {
   totalElements: 0,
 };
 
-export function useGalleryImages(folderId: UUID): UseGalleryImagesResult {
+export function useGalleryImages(directoryId: UUID): UseGalleryImagesResult {
   const { data, isLoading, error } = useQuery({
-    queryKey: ['galleryImages', folderId],
-    queryFn: () => fetchImages(folderId),
-    enabled: !!folderId,
+    queryKey: ['galleryImages', directoryId],
+    queryFn: () => fetchImages(directoryId),
+    enabled: !!directoryId,
   });
 
   return {
