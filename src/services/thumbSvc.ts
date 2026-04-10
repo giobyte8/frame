@@ -29,7 +29,7 @@ export function thumbsFor(image: Image): ThumbUriMap {
   const pathWithoutExtension = trimExtension(image.path);
 
   return {
-    [ThumbWidth.PX_256]: `${baseUrl}/thumbs/${pathWithoutExtension}_${ThumbWidth.PX_256}.jpg`,
-    [ThumbWidth.PX_512]: `${baseUrl}/thumbs/${pathWithoutExtension}_${ThumbWidth.PX_512}.jpg`,
+    [ThumbWidth.PX_256]: `${baseUrl}/thumbs/${pathWithoutExtension}_${ThumbWidth.PX_256}.webp`,
+    [ThumbWidth.PX_512]: `${baseUrl}/thumbs/${pathWithoutExtension}_${ThumbWidth.PX_512}.webp`,
   };
 }
