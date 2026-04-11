@@ -1,5 +1,5 @@
 import { env } from '../config/env';
-import type { Image } from '../types/api';
+import type { MediaItem } from '../types/api';
 
 export const ThumbWidth = {
   PX_256: '256px',
@@ -24,9 +24,9 @@ function trimExtension(path: string): string {
   return path.slice(0, extensionIndex);
 }
 
-export function thumbsFor(image: Image): ThumbUriMap {
+export function thumbsFor(media: MediaItem): ThumbUriMap {
   const baseUrl = stripTrailingSlash(env.estaticoBaseUrl);
-  const pathWithoutExtension = trimExtension(image.path);
+  const pathWithoutExtension = trimExtension(media.path);
 
   return {
     [ThumbWidth.PX_256]: `${baseUrl}/thumbs/${pathWithoutExtension}_${ThumbWidth.PX_256}.webp`,

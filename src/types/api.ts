@@ -22,6 +22,26 @@ export interface Image {
   version: number;
 }
 
+export interface MediaItem {
+  id: UUID,
+  path: string,
+  version: number,
+  fileSize: number,
+  lastModified: string,
+
+  captureDateTime: string | null,
+  captureInstant: string | null,
+  rawCaptureDateTime: string | null,
+
+  gpsLatitude: number | null,
+  gpsLongitude: number | null,
+  cameraMaker: string | null,
+  cameraModel: string | null,
+
+  status: string,
+  mediaType: string
+}
+
 export interface Page<T> {
   content: T[];
   pageIdx: number;

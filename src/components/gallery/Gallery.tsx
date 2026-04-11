@@ -3,9 +3,9 @@ import React from 'react';
 import styled from 'styled-components';
 import { DirectoriesGrid } from '../directories/DirectoriesGrid';
 import { useDirectories } from '../../hooks/useDirectories';
-import { useGalleryImages } from "../../hooks/useGalleryImages";
+import { useGalleryMedia } from "../../hooks/useGalleryMedia";
 import { thumbsFor, ThumbWidth } from "../../services/thumbSvc";
-import type { Image, UUID } from "../../types/api";
+import type { MediaItem, UUID } from "../../types/api";
 
 const S = {
   Wrapper: styled.div`
@@ -57,19 +57,19 @@ interface GalleryProps {
 
 
 const Gallery: React.FC<GalleryProps> = ({ directoryId }) => {
-  const { page: imagesPage, isLoading: isLoadingImages, error: imagesError } = useGalleryImages(directoryId);
+  const { page: mediaPage, isLoading: isLoadingMedia, error: mediaError } = useGalleryMedia(directoryId);
   const {
     page: directoriesPage,
     isLoading: isLoadingDirectories,
     error: directoriesError,
   } = useDirectories(directoryId);
 
-  if (isLoadingImages || isLoadingDirectories) {
+  if (isLoadingMedia || isLoadingDirectories) {
     return <Skeleton active paragraph={{ rows: 10 }} />;
   }
 
-  if (imagesError || directoriesError) {
-    const error = imagesError ?? directoriesError;
+  if (mediaError || directoriesError) {
+    const error = mediaError ?? directoriesError;
 
     return <Alert
       type="error"
@@ -79,22 +79,22 @@ const Gallery: React.FC<GalleryProps> = ({ directoryId }) => {
     />;
   }
 
-  if (imagesPage.content.length === 0 && directoriesPage.content.length === 0) {
-    return <Empty description="No images found for this directory" />;
+  if (mediaPage.content.length === 0 && directoriesPage.content.length === 0) {
+    return <Empty description="No media found for this directory" />;
   }
 
   return (
     <S.Wrapper>
       {directoriesPage.content.length > 0 && <DirectoriesGrid directories={directoriesPage.content} />}
 
-      {imagesPage.content.length > 0 && (
+      {mediaPage.content.length > 0 && (
         <S.Masonry>
-          {imagesPage.content.map((image: Image) => {
-            const thumbnailUri = thumbsFor(image)[ThumbWidth.PX_512];
+          {mediaPage.content.map((media: MediaItem) => {
+            const thumbnailUri = thumbsFor(media)[ThumbWidth.PX_512];
 
             return (
-              <S.Item key={image.contentHash}>
-                <S.Image src={thumbnailUri} alt={image.path} loading="lazy" />
+              <S.Item key={media.path}>
+                <S.Image src={thumbnailUri} alt={media.path} loading="lazy" />
               </S.Item>
             );
           })}
