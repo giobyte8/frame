@@ -10,8 +10,12 @@ const S = {
     background: ${({ theme }) => theme.colors.background};
   `,
   AppHeader: styled(Header)`
+    border-radius: ${({ theme }) => theme.radius.md};
+    margin: 0 auto;
     position: sticky;
-    top: 0;
+    top: ${({ theme }) => theme.spacing.xs};
+    width: ${({ theme }) => `calc(100% - (${theme.spacing.lg} * 2))`};
+    max-width: ${({ theme }) => `calc(${theme.layout.maxContentWidth} - (${theme.spacing.lg} * 2))`};
     z-index: 1;
   `,
   Content: styled(Content)`
