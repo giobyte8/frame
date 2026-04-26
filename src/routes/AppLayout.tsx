@@ -1,53 +1,35 @@
-import { Layout, Menu } from 'antd';
+import { Layout } from 'antd';
+import FloatingTopNav from '../components/navigation/FloatingTopNav';
 import styled from 'styled-components';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 
-const { Header, Content } = Layout;
+const { Content } = Layout;
 
 const S = {
   AppShell: styled(Layout)`
     min-height: 100vh;
     background: ${({ theme }) => theme.colors.background};
   `,
-  AppHeader: styled(Header)`
-    border-radius: ${({ theme }) => theme.radius.md};
-    margin: 0 auto;
-    position: sticky;
-    top: ${({ theme }) => theme.spacing.xs};
-    width: ${({ theme }) => `calc(100% - (${theme.spacing.lg} * 2))`};
-    max-width: ${({ theme }) => `calc(${theme.layout.maxContentWidth} - (${theme.spacing.lg} * 2))`};
-    z-index: 1;
-  `,
   Content: styled(Content)`
     width: 100%;
     max-width: ${({ theme }) => theme.layout.maxContentWidth};
     margin: 0 auto;
-    padding: ${({ theme }) => theme.spacing.lg};
+    padding: ${({ theme }) => `${theme.spacing.lg} ${theme.spacing.lg} ${theme.spacing.lg}`};
+    padding-top: ${({ theme }) => `calc(${theme.spacing.lg} + 64px)`};
+
+    @media (max-width: 900px) {
+      padding-top: ${({ theme }) => `calc(${theme.spacing.md} + 64px)`};
+    }
   `,
 };
 
-const menuItems = [
-  { key: '/root/', label: '/root/' },
-];
-
 export default function AppLayout() {
-  const navigate = useNavigate();
   const location = useLocation();
-  const selectedKey = location.pathname.startsWith('/root') ? '/root/' : '';
+  const currentPath = location.pathname.startsWith('/root') ? location.pathname : '/root/';
 
   return (
     <S.AppShell>
-      <S.AppHeader>
-        <Menu
-          theme="dark"
-          mode="horizontal"
-          selectedKeys={selectedKey ? [selectedKey] : []}
-          items={menuItems}
-          onClick={({ key }) => {
-            navigate(key);
-          }}
-        />
-      </S.AppHeader>
+      <FloatingTopNav currentPath={currentPath} />
       <S.Content>
         <Outlet />
       </S.Content>
