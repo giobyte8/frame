@@ -12,7 +12,6 @@ const S = {
   `,
   Content: styled(Content)`
     width: 100%;
-    max-width: ${({ theme }) => theme.layout.maxContentWidth};
     margin: 0 auto;
     padding: ${({ theme }) => `${theme.spacing.lg} ${theme.spacing.lg} ${theme.spacing.lg}`};
     padding-top: ${({ theme }) => `calc(${theme.spacing.lg} + 64px)`};

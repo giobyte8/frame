@@ -13,19 +13,23 @@ const S = {
     gap: ${({ theme }) => theme.spacing.lg};
   `,
   Masonry: styled.div`
-    column-count: 4;
+    column-count: 6;
     column-gap: ${({ theme }) => theme.spacing.md};
 
+    @media (max-width: 1400px) {
+      column-count: 5;
+    }
+
     @media (max-width: 1200px) {
-      column-count: 3;
+      column-count: 4;
     }
 
     @media (max-width: 900px) {
-      column-count: 2;
+      column-count: 3;
     }
 
     @media (max-width: 640px) {
-      column-count: 1;
+      column-count: 2;
     }
   `,
   Item: styled.figure`
