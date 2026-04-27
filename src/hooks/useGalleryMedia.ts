@@ -15,6 +15,7 @@ interface InfiniteResult<T> {
   error: Error | null;
   fetchNextPage: () => void;
   hasNextPage: boolean;
+  isFetchingNextPage: boolean;
 }
 
 const EMPTY_PAGE: Page<any> = {
@@ -61,13 +62,14 @@ export function useGalleryMediaInfinite(
   directoryId: UUID,
   recursive: boolean = true
 ): InfiniteResult<MediaItem> {
-  const PG_SIZE = 10;
+  const PG_SIZE = 50;
   const {
     data,
     isLoading,
     error,
     fetchNextPage,
     hasNextPage,
+    isFetchingNextPage,
   } = useInfiniteQuery({
     queryKey: ['galleryMediaInfinite', directoryId],
     queryFn: ({ pageParam = 0 }) => fetchMediaPage(
@@ -89,5 +91,6 @@ export function useGalleryMediaInfinite(
     error: error instanceof Error ? error : null,
     fetchNextPage,
     hasNextPage,
+    isFetchingNextPage,
   };
 }

@@ -59,6 +59,7 @@ const Gallery: React.FC<GalleryProps> = ({ directoryId }) => {
         mediaItems={mediaItems}
         hasNextPage={infiniteMedia.hasNextPage}
         fetchNextPage={infiniteMedia.fetchNextPage}
+        isFetchingNextPage={infiniteMedia.isFetchingNextPage}
       />
     </S.Wrapper>
   );
