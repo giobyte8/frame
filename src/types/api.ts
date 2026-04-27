@@ -23,7 +23,6 @@ export interface Image {
 }
 
 export interface MediaItem {
-  id: UUID,
   path: string,
   version: number,
   fileSize: number,

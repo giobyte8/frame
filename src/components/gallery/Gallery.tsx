@@ -1,13 +1,11 @@
 import { Alert, Empty, Skeleton } from 'antd';
 import React from 'react';
 import styled from 'styled-components';
-import { env } from '../../config/env';
 import { useDirectories } from '../../hooks/useDirectories';
-import { useGalleryMedia } from '../../hooks/useGalleryMedia';
+import { useGalleryMediaInfinite } from '../../hooks/useGalleryMedia';
 import type { UUID } from '../../types/api';
 import { DirectoriesGrid } from '../directories/DirectoriesGrid';
-import MediaMasonry from './MediaMasonry';
-import VirtualizedMediaGrid from './VirtualizedMediaGrid';
+import SquaredGrid from './grid/SquaredGrid';
 
 const S = {
   Wrapper: styled.div`
@@ -22,19 +20,21 @@ interface GalleryProps {
 
 
 const Gallery: React.FC<GalleryProps> = ({ directoryId }) => {
-  const { page: mediaPage, isLoading: isLoadingMedia, error: mediaError } = useGalleryMedia(directoryId);
   const {
     page: directoriesPage,
     isLoading: isLoadingDirectories,
     error: directoriesError,
   } = useDirectories(directoryId);
 
-  if (isLoadingMedia || isLoadingDirectories) {
+  // Fetch media items for current directory
+  const infiniteMedia = useGalleryMediaInfinite(directoryId);
+
+  if (infiniteMedia.isLoading || isLoadingDirectories) {
     return <Skeleton active paragraph={{ rows: 10 }} />;
   }
 
-  if (mediaError || directoriesError) {
-    const error = mediaError ?? directoriesError;
+  if (infiniteMedia.error || directoriesError) {
+    const error = infiniteMedia.error ?? directoriesError;
 
     return <Alert
       type="error"
@@ -44,19 +44,22 @@ const Gallery: React.FC<GalleryProps> = ({ directoryId }) => {
     />;
   }
 
-  if (mediaPage.content.length === 0 && directoriesPage.content.length === 0) {
+  if (!infiniteMedia.pages?.[0]?.content.length && !directoriesPage.content.length) {
     return <Empty description="No media found for this directory" />;
   }
+
+  // Join (flatten) all media items from paginated results
+  const mediaItems = infiniteMedia.pages?.flatMap(page => page.content) ?? [];
 
   return (
     <S.Wrapper>
       {directoriesPage.content.length > 0 && <DirectoriesGrid directories={directoriesPage.content} />}
 
-      {mediaPage.content.length > 0 && (
-        env.featureVirtualGallery
-          ? <VirtualizedMediaGrid mediaItems={mediaPage.content} />
-          : <MediaMasonry mediaItems={mediaPage.content} />
-      )}
+      <SquaredGrid
+        mediaItems={mediaItems}
+        hasNextPage={infiniteMedia.hasNextPage}
+        fetchNextPage={infiniteMedia.fetchNextPage}
+      />
     </S.Wrapper>
   );
 };

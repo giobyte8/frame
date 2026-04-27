@@ -25,3 +25,21 @@ export async function fetchMedia(directoryId: UUID): Promise<Page<MediaItem>> {
 
     return data;
 }
+
+export async function fetchMediaPage(
+    directoryId: UUID,
+    recursive: boolean,
+    page: number,
+    pageSize: number
+): Promise<Page<MediaItem>> {
+    const { data } = await apiClient.get<Page<MediaItem>>(
+        `/directories/${directoryId}/media`,
+        { params: {
+            recursive,
+            page,
+            size: pageSize,
+        }}
+    );
+
+    return data;
+}
