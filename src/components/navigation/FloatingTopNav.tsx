@@ -130,7 +130,7 @@ const LeftNav: React.FC = () => {
         />
       </Tooltip>
 
-      <S.PathText strong ellipsis={{ tooltip: directory?.path }}>
+      <S.PathText strong ellipsis={{ tooltip: directory.path }}>
         { basename(directory) }/
       </S.PathText>
     </S.LeftNav>
