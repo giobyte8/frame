@@ -137,28 +137,38 @@ const LeftNav: React.FC = () => {
   );
 }
 
+const RightNav: React.FC = () => {
+  // Hidden until implementation is complete
+  const enabled = false;
+  if (!enabled) return null;
+
+  return (
+    <S.RightNav>
+      <Space.Compact>
+        <Tooltip title="Large grid">
+          <Button icon={<BorderOutlined />} />
+        </Tooltip>
+        <Tooltip title="Medium grid">
+          <Button type="primary" icon={<AppstoreOutlined />} />
+        </Tooltip>
+        <Tooltip title="Small grid">
+          <Button icon={<UnorderedListOutlined />} />
+        </Tooltip>
+      </Space.Compact>
+
+      <Tooltip title="Toggle recursive view">
+        <Button icon={<RetweetOutlined />}>Recursive</Button>
+      </Tooltip>
+    </S.RightNav>
+  );
+}
+
 const FloatingTopNav: React.FC = () => {
   return (
     <S.StickyLayer>
       <LeftNav />
 
-      <S.RightNav>
-        <Space.Compact>
-          <Tooltip title="Large grid">
-            <Button icon={<BorderOutlined />} />
-          </Tooltip>
-          <Tooltip title="Medium grid">
-            <Button type="primary" icon={<AppstoreOutlined />} />
-          </Tooltip>
-          <Tooltip title="Small grid">
-            <Button icon={<UnorderedListOutlined />} />
-          </Tooltip>
-        </Space.Compact>
-
-        <Tooltip title="Toggle recursive view">
-          <Button icon={<RetweetOutlined />}>Recursive</Button>
-        </Tooltip>
-      </S.RightNav>
+      <RightNav />
     </S.StickyLayer>
   );
 };
