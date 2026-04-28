@@ -1,9 +1,10 @@
 import React from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
-  ArrowLeftOutlined,
   AppstoreOutlined,
   BorderOutlined,
   DownOutlined,
+  HomeOutlined,
   RetweetOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons';
@@ -11,9 +12,10 @@ import { Button, Dropdown, Space, Tooltip, Typography } from 'antd';
 import type { MenuProps } from 'antd';
 import styled from 'styled-components';
 
-interface FloatingTopNavProps {
-  currentPath: string;
-}
+import type { UUID } from '../../types/api';
+import { useDirectory } from '../../hooks/useDirectory';
+import { basename } from '../../services/pathSvc';
+
 
 const S = {
   StickyLayer: styled.div`
@@ -106,27 +108,39 @@ const toParentPathItems = (path: string): MenuProps['items'] => {
   }));
 };
 
-const FloatingTopNav: React.FC<FloatingTopNavProps> = ({ currentPath }) => {
-  const safePath = currentPath || '/root/';
-  const parentPathItems = toParentPathItems(safePath);
+const LeftNav: React.FC = () => {
+  const { directoryId } = useParams<{ directoryId: UUID }>();
+  if (!directoryId) return null;
+
+  const navigate = useNavigate();
+  const {
+    directory,
+    isLoading,
+    error
+  } = useDirectory(directoryId);
+
+  if (isLoading || error || !directory) return null;
 
   return (
+    <S.LeftNav>
+      <Tooltip title="Home">
+        <Button
+          icon={<HomeOutlined />}
+          onClick={() => navigate('/root/')}
+        />
+      </Tooltip>
+
+      <S.PathText strong ellipsis={{ tooltip: directory?.path }}>
+        { basename(directory) }/
+      </S.PathText>
+    </S.LeftNav>
+  );
+}
+
+const FloatingTopNav: React.FC = () => {
+  return (
     <S.StickyLayer>
-      <S.LeftNav>
-        <Tooltip title="Back">
-          <Button shape="circle" icon={<ArrowLeftOutlined />} disabled />
-        </Tooltip>
-
-        <Dropdown menu={{ items: parentPathItems }} trigger={['click']}>
-          <Button>
-            Parent <DownOutlined />
-          </Button>
-        </Dropdown>
-
-        <S.PathText strong ellipsis={{ tooltip: safePath }}>
-          {safePath}
-        </S.PathText>
-      </S.LeftNav>
+      <LeftNav />
 
       <S.RightNav>
         <Space.Compact>

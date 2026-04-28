@@ -16,3 +16,10 @@ export async function fetchDirectories(directoryId: UUID): Promise<Page<Director
 
   return data;
 }
+
+export async function fetchDirectory(directoryId: UUID): Promise<Directory> {
+  const { data } = await apiClient
+    .get<Directory>(`/directories/${directoryId}`);
+
+  return data;
+}

@@ -1,7 +1,7 @@
 import { Layout } from 'antd';
 import FloatingTopNav from '../components/navigation/FloatingTopNav';
 import styled from 'styled-components';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 
 const { Content } = Layout;
 
@@ -23,12 +23,9 @@ const S = {
 };
 
 export default function AppLayout() {
-  const location = useLocation();
-  const currentPath = location.pathname.startsWith('/root') ? location.pathname : '/root/';
-
   return (
     <S.AppShell>
-      <FloatingTopNav currentPath={currentPath} />
+      <FloatingTopNav />
       <S.Content>
         <Outlet />
       </S.Content>
