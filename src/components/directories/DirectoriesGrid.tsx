@@ -3,7 +3,9 @@ import { Card, Typography } from 'antd';
 import type { KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+
 import type { Directory } from '../../types/api';
+import { basename } from '../../services/pathSvc';
 
 interface DirectoriesGridProps {
   directories: Directory[];
@@ -73,7 +75,9 @@ export function DirectoriesGrid({ directories }: DirectoriesGridProps) {
           <S.IconWrap>
             <FolderOutlined />
           </S.IconWrap>
-          <S.Path ellipsis={{ rows: 2, tooltip: dir.path }}>{dir.path}</S.Path>
+          <S.Path ellipsis={{ rows: 2, tooltip: basename(dir) }}>
+            { basename(dir) }
+          </S.Path>
         </S.Card>
       ))}
     </S.Grid>
