@@ -5,7 +5,7 @@ import { useDirectories } from '../../hooks/useDirectories';
 import { useGalleryMediaInfinite } from '../../hooks/useGalleryMedia';
 import type { UUID } from '../../types/api';
 import { DirectoriesGrid } from '../directories/DirectoriesGrid';
-import SquaredGrid from './grid/SquaredGrid';
+import MasonryGrid from './grid/MasonryGrid';
 
 const S = {
   Wrapper: styled.div`
@@ -55,7 +55,7 @@ const Gallery: React.FC<GalleryProps> = ({ directoryId }) => {
     <S.Wrapper>
       {directoriesPage.content.length > 0 && <DirectoriesGrid directories={directoriesPage.content} />}
 
-      <SquaredGrid
+      <MasonryGrid
         mediaItems={mediaItems}
         hasNextPage={infiniteMedia.hasNextPage}
         fetchNextPage={infiniteMedia.fetchNextPage}
