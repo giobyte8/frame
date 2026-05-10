@@ -1,12 +1,9 @@
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import React from 'react';
 import styled from 'styled-components';
+import { isKeyboardSelect } from '../../services/keyboardSvc';
 import { thumbsFor, ThumbWidth } from '../../services/thumbSvc';
-import type { MediaItem } from '../../types/api';
-
-interface VirtualizedMediaGridProps {
-  mediaItems: MediaItem[];
-}
+import type { GridProps } from './grid/types';
 
 const GRID_GAP_PX = 16;
 const OVERSCAN_ITEMS = 16;
@@ -44,6 +41,12 @@ const S = {
     -webkit-column-break-inside: avoid;
     break-inside: avoid;
     will-change: transform;
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid ${({ theme }) => theme.colors.textMuted};
+      outline-offset: 3px;
+    }
 
     &:first-child {
       margin-top: 0;
@@ -56,7 +59,7 @@ const S = {
   `,
 };
 
-const VirtualizedMediaGrid: React.FC<VirtualizedMediaGridProps> = ({ mediaItems }) => {
+const VirtualizedMediaGrid: React.FC<GridProps> = ({ mediaItems, onMediaClick }) => {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [containerWidth, setContainerWidth] = React.useState(1200);
   const [scrollMargin, setScrollMargin] = React.useState(0);
@@ -118,7 +121,8 @@ const VirtualizedMediaGrid: React.FC<VirtualizedMediaGridProps> = ({ mediaItems 
     <S.Wrapper ref={containerRef}>
       <S.Canvas style={{ height: itemVirtualizer.getTotalSize() }}>
         {virtualItems.map((virtualItem) => {
-          const media = mediaItems[virtualItem.index];
+          const idx = virtualItem.index;
+          const media = mediaItems[idx];
 
           if (!media) {
             return null;
@@ -131,11 +135,21 @@ const VirtualizedMediaGrid: React.FC<VirtualizedMediaGridProps> = ({ mediaItems 
           return (
             <S.Item
               key={virtualItem.key}
-              data-index={virtualItem.index}
+              data-index={idx}
               ref={itemVirtualizer.measureElement}
+              role="button"
+              tabIndex={0}
+              aria-label={`Open ${media.path}`}
               $left={left}
               $top={virtualItem.start - scrollMargin}
               $width={columnWidth}
+              onClick={() => onMediaClick(media, idx)}
+              onKeyDown={(event) => {
+                if (isKeyboardSelect(event)) {
+                  event.preventDefault();
+                  onMediaClick(media, idx);
+                }
+              }}
             >
               <S.Image src={thumbnailUri} alt={media.path} loading="lazy" decoding="async" />
             </S.Item>

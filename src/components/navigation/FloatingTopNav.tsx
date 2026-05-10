@@ -3,13 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   AppstoreOutlined,
   BorderOutlined,
-  DownOutlined,
   HomeOutlined,
   RetweetOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons';
-import { Button, Dropdown, Space, Tooltip, Typography } from 'antd';
-import type { MenuProps } from 'antd';
+import { Button, Space, Tooltip, Typography } from 'antd';
 import styled from 'styled-components';
 
 import type { UUID } from '../../types/api';
@@ -81,43 +79,16 @@ const S = {
   `,
 };
 
-const toParentPathItems = (path: string): MenuProps['items'] => {
-  const cleanPath = path.trim() || '/root/';
-  const normalized = cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`;
-  const parts = normalized.split('/').filter(Boolean);
-
-  const parentPaths = parts
-    .map((_, index) => `/${parts.slice(0, index + 1).join('/')}/`)
-    .slice(0, -1)
-    .reverse();
-
-  if (parentPaths.length === 0) {
-    return [
-      {
-        key: 'no-parent',
-        label: 'No parent directories',
-        disabled: true,
-      },
-    ];
-  }
-
-  return parentPaths.map((parentPath) => ({
-    key: parentPath,
-    label: parentPath,
-    disabled: true,
-  }));
-};
-
 const LeftNav: React.FC = () => {
   const { directoryId } = useParams<{ directoryId: UUID }>();
-  if (!directoryId) return null;
-
   const navigate = useNavigate();
   const {
     directory,
     isLoading,
     error
   } = useDirectory(directoryId);
+
+  if (!directoryId) return null;
 
   if (isLoading || error || !directory) return null;
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useEffect } from 'react';
 import styled from 'styled-components';
+import { isKeyboardSelect } from '../../../services/keyboardSvc';
 import { thumbsFor, ThumbWidth } from '../../../services/thumbSvc';
 import type { GridProps } from './types';
 
@@ -39,6 +40,12 @@ const S = {
     border-radius: ${({ theme }) => theme.radius.md};
     overflow: hidden;
     background: ${({ theme }) => theme.colors.surface};
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid ${({ theme }) => theme.colors.textMuted};
+      outline-offset: 3px;
+    }
 
     &:first-child {
       margin-top: 0;
@@ -57,7 +64,7 @@ const S = {
 };
 
 const MasonryGrid: React.FC<GridProps> = ({
-  mediaItems, hasNextPage, fetchNextPage, isFetchingNextPage
+  mediaItems, hasNextPage, fetchNextPage, isFetchingNextPage, onMediaClick
 }) => {
   const sentinelRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -91,10 +98,22 @@ const MasonryGrid: React.FC<GridProps> = ({
 
   return (
     <S.Masonry>
-      {mediaItems.map((mItem) => {
+      {mediaItems.map((mItem, idx) => {
         const thumbnailUri = thumbsFor(mItem)[ThumbWidth.PX_512];
 
-        return <S.GridItem key={mItem.path}>
+        return <S.GridItem
+            key={mItem.path}
+            role="button"
+            tabIndex={0}
+            aria-label={`Open ${mItem.path}`}
+            onClick={() => onMediaClick(mItem, idx)}
+            onKeyDown={(event) => {
+              if (isKeyboardSelect(event)) {
+                event.preventDefault();
+                onMediaClick(mItem, idx);
+              }
+            }}
+          >
             <S.Image src={thumbnailUri} alt={mItem.path} loading="lazy" decoding="async" />
         </S.GridItem>
       })}

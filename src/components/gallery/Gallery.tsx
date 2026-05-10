@@ -1,11 +1,13 @@
 import { Alert, Empty, Skeleton } from 'antd';
-import React from 'react';
+import React, { useMemo } from 'react';
 import styled from 'styled-components';
 import { useDirectories } from '../../hooks/useDirectories';
 import { useGalleryMediaInfinite } from '../../hooks/useGalleryMedia';
+import { useMediaViewer } from '../../hooks/useMediaViewer';
 import type { UUID } from '../../types/api';
 import { DirectoriesGrid } from '../directories/DirectoriesGrid';
-import MasonryGrid from './grid/MasonryGrid';
+import MediaViewer from './viewer/MediaViewer';
+import SquaredGrid from './grid/SquaredGrid';
 
 const S = {
   Wrapper: styled.div`
@@ -29,39 +31,64 @@ const Gallery: React.FC<GalleryProps> = ({ directoryId }) => {
   // Fetch media items for current directory
   const infiniteMedia = useGalleryMediaInfinite(directoryId);
 
+  // Join (flatten) all media items from paginated results
+  // useMemo avoids re-flattening the pages array on every render
+  const mediaItems = useMemo(
+    () => infiniteMedia.pages?.flatMap(page => page.content) ?? [],
+    [infiniteMedia.pages]
+  );
+  const totalCount = infiniteMedia.pages?.[0]?.totalElements ?? mediaItems.length;
+
+  const viewer = useMediaViewer({
+    mediaItems,
+    hasNextPage: infiniteMedia.hasNextPage,
+    isFetchingNextPage: infiniteMedia.isFetchingNextPage,
+    fetchNextPage: infiniteMedia.fetchNextPage,
+    directoryId,
+  });
+
   if (infiniteMedia.isLoading || isLoadingDirectories) {
     return <Skeleton active paragraph={{ rows: 10 }} />;
   }
 
-  if (infiniteMedia.error || directoriesError) {
-    const error = infiniteMedia.error ?? directoriesError;
-
-    return <Alert
-      type="error"
-      showIcon
-      title="Error loading gallery"
-      description={error?.message}
-    />;
+  const error = infiniteMedia.error ?? directoriesError;
+  if (error) {
+    return <Alert type="error" showIcon title="Error loading gallery" description={error.message} />;
   }
 
-  if (!infiniteMedia.pages?.[0]?.content.length && !directoriesPage.content.length) {
+  if (!mediaItems.length && !directoriesPage.content.length) {
     return <Empty description="No media found for this directory" />;
   }
 
-  // Join (flatten) all media items from paginated results
-  const mediaItems = infiniteMedia.pages?.flatMap(page => page.content) ?? [];
-
   return (
-    <S.Wrapper>
-      {directoriesPage.content.length > 0 && <DirectoriesGrid directories={directoriesPage.content} />}
+    <>
+      <S.Wrapper>
+        {directoriesPage.content.length > 0 && (
+          <DirectoriesGrid directories={directoriesPage.content} />
+        )}
 
-      <MasonryGrid
-        mediaItems={mediaItems}
-        hasNextPage={infiniteMedia.hasNextPage}
-        fetchNextPage={infiniteMedia.fetchNextPage}
-        isFetchingNextPage={infiniteMedia.isFetchingNextPage}
+        <SquaredGrid
+          mediaItems={mediaItems}
+          hasNextPage={infiniteMedia.hasNextPage}
+          fetchNextPage={infiniteMedia.fetchNextPage}
+          isFetchingNextPage={infiniteMedia.isFetchingNextPage}
+          onMediaClick={viewer.open}
+        />
+      </S.Wrapper>
+
+      <MediaViewer
+        isOpen={viewer.isOpen}
+        media={viewer.activeMedia}
+        activeIndex={viewer.activeIdx}
+        totalCount={totalCount}
+        hasPrev={viewer.hasPrev}
+        hasNext={viewer.hasNext}
+        isLoadingAdjacent={viewer.isLoadingAdjacent}
+        onClose={viewer.close}
+        onPrev={viewer.prev}
+        onNext={viewer.next}
       />
-    </S.Wrapper>
+    </>
   );
 };
 

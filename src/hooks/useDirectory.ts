@@ -14,10 +14,11 @@ interface UseDirectoryResult {
  * @param directoryId Directory Id
  * @returns Fetched directory
  */
-export function useDirectory(directoryId: UUID): UseDirectoryResult {
+export function useDirectory(directoryId?: UUID): UseDirectoryResult {
     const { data, isLoading, error } = useQuery({
       queryKey: ['directory', directoryId],
-      queryFn: () => fetchDirectory(directoryId),
+      queryFn: () => fetchDirectory(directoryId as UUID),
+      enabled: !!directoryId,
     });
 
     return {

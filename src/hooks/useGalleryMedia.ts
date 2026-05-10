@@ -18,13 +18,15 @@ interface InfiniteResult<T> {
   isFetchingNextPage: boolean;
 }
 
-const EMPTY_PAGE: Page<any> = {
-  content: [],
-  pageIdx: 0,
-  pageSize: 0,
-  totalPages: 0,
-  totalElements: 0,
-};
+function mkEmptyPage<T>(): Page<T> {
+  return {
+    content: [],
+    pageIdx: 0,
+    pageSize: 0,
+    totalPages: 0,
+    totalElements: 0,
+  };
+}
 
 export function useGalleryImages(directoryId: UUID):
     PaginatedResult<Image> {
@@ -36,7 +38,7 @@ export function useGalleryImages(directoryId: UUID):
   });
 
   return {
-    page: data ?? EMPTY_PAGE,
+    page: data ?? mkEmptyPage<Image>(),
     isLoading,
     error: error instanceof Error ? error : null,
   };
@@ -52,7 +54,7 @@ export function useGalleryMedia(directoryId: UUID):
   });
 
   return {
-    page: data ?? EMPTY_PAGE,
+    page: data ?? mkEmptyPage<MediaItem>(),
     isLoading,
     error: error instanceof Error ? error : null,
   };

@@ -1,8 +1,9 @@
 import React from "react";
 import { useEffect } from "react";
 import styled from "styled-components";
-import type { MediaItem } from "../../../types/api";
+import { isKeyboardSelect } from '../../../services/keyboardSvc';
 import { thumbsFor, ThumbWidth } from '../../../services/thumbSvc';
+import type { GridProps } from './types';
 
 const S = {
   Grid: styled.div`
@@ -16,6 +17,12 @@ const S = {
     border-radius: ${({ theme }) => theme.radius.md};
     height: 400px;
     overflow: hidden;
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid ${({ theme }) => theme.colors.textMuted};
+      outline-offset: 2px;
+    }
   `,
   Image: styled.img`
     object-fit: contain;
@@ -29,15 +36,8 @@ const S = {
   `,
 };
 
-interface SquaredGridProps {
-  mediaItems: MediaItem[];
-  hasNextPage: boolean;
-  fetchNextPage: () => void;
-  isFetchingNextPage: boolean;
-}
-
-const SquaredGrid: React.FC<SquaredGridProps> = ({
-  mediaItems, hasNextPage, fetchNextPage, isFetchingNextPage
+const SquaredGrid: React.FC<GridProps> = ({
+  mediaItems, hasNextPage, fetchNextPage, isFetchingNextPage, onMediaClick
 }) => {
   const sentinelRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -73,10 +73,22 @@ const SquaredGrid: React.FC<SquaredGridProps> = ({
 
   return (
     <S.Grid>
-      { mediaItems.map((mItem) => {
+      { mediaItems.map((mItem, idx) => {
         const thumbUri = thumbsFor(mItem)[ThumbWidth.PX_512];
 
-        return <S.GridItem key={mItem.path}>
+        return <S.GridItem
+          key={mItem.path}
+          role="button"
+          tabIndex={0}
+          aria-label={`Open ${mItem.path}`}
+          onClick={() => onMediaClick(mItem, idx)}
+          onKeyDown={(event) => {
+            if (isKeyboardSelect(event)) {
+              event.preventDefault();
+              onMediaClick(mItem, idx);
+            }
+          }}
+        >
           <S.Image src={thumbUri} alt={mItem.path} loading="lazy" />
         </S.GridItem>;
       })}

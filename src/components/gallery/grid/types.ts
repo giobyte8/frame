@@ -5,4 +5,5 @@ export interface GridProps {
   hasNextPage: boolean;
   fetchNextPage: () => void;
   isFetchingNextPage: boolean;
+  onMediaClick: (media: MediaItem, index: number) => void;
 }
