@@ -12,6 +12,12 @@ const S = {
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: ${({ theme }) => `${theme.spacing.md} 0`};
+  `,
+
+  MediaFrame: styled.div`
+    border: 1px solid red;
+    height: 100%;
   `,
 };
 
@@ -27,7 +33,9 @@ const Slider: React.FC<ViewerProps> = ({
 
   return (
     <S.Slider>
-      <img src={thumbUri} alt={mediaItem.path} />
+      <S.MediaFrame>
+        <img src={thumbUri} alt={mediaItem.path} style={{ height: '100%' }}/>
+      </S.MediaFrame>
     </S.Slider>
   );
 }
