@@ -1,70 +1,28 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { fetchImages, fetchMedia, fetchMediaPage } from '../api/images';
-import type { Image, MediaItem, Page, UUID } from '../types/api';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { fetchMediaPage } from '../api/images';
+import type { MediaItem, Page, UUID } from '../types/api';
 
 
-interface PaginatedResult<T> {
-  page: Page<T>;
+interface GalleryMedia {
+  items: MediaItem[];
+  /** True on the initial fetch. */
   isLoading: boolean;
+  /** True while fetching a subsequent page. */
+  isLoadingMore: boolean;
   error: Error | null;
+
+  hasMore: boolean;
+  fetchMore: () => void;
 }
 
-interface InfiniteResult<T> {
-  pages: Page<T>[];
-  isLoading: boolean;
-  error: Error | null;
-  fetchNextPage: () => void;
-  hasNextPage: boolean;
-  isFetchingNextPage: boolean;
-}
-
-function mkEmptyPage<T>(): Page<T> {
-  return {
-    content: [],
-    pageIdx: 0,
-    pageSize: 0,
-    totalPages: 0,
-    totalElements: 0,
-  };
-}
-
-export function useGalleryImages(directoryId: UUID):
-    PaginatedResult<Image> {
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['galleryImages', directoryId],
-    queryFn: () => fetchImages(directoryId),
-    enabled: !!directoryId,
-  });
-
-  return {
-    page: data ?? mkEmptyPage<Image>(),
-    isLoading,
-    error: error instanceof Error ? error : null,
-  };
-}
-
-export function useGalleryMedia(directoryId: UUID):
-    PaginatedResult<MediaItem> {
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['galleryMedia', directoryId],
-    queryFn: () => fetchMedia(directoryId),
-    enabled: !!directoryId,
-  });
-
-  return {
-    page: data ?? mkEmptyPage<MediaItem>(),
-    isLoading,
-    error: error instanceof Error ? error : null,
-  };
-}
-
-export function useGalleryMediaInfinite(
+export function useGalleryMedia(
   directoryId: UUID,
   recursive: boolean = true
-): InfiniteResult<MediaItem> {
-  const PG_SIZE = 50;
+): GalleryMedia {
+  const PAGE_SIZE = 10;
+  console.debug('Using gallery media');
+
+  // Fetch media via 'useInfiniteQuery'
   const {
     data,
     isLoading,
@@ -78,7 +36,7 @@ export function useGalleryMediaInfinite(
       directoryId,
       recursive,
       pageParam,
-      PG_SIZE
+      PAGE_SIZE
     ),
     initialPageParam: 0,
     getNextPageParam: (lastPage: Page<MediaItem>) => {
@@ -87,12 +45,16 @@ export function useGalleryMediaInfinite(
     },
   });
 
+  // Flatten paginated results into a single array of media items
+  const mediaItems = data?.pages?.flatMap(page => page.content) ?? [];
+
   return {
-    pages: data?.pages ?? [],
+    items: mediaItems,
     isLoading,
+    isLoadingMore: isFetchingNextPage,
     error: error instanceof Error ? error : null,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
+
+    hasMore: hasNextPage,
+    fetchMore: fetchNextPage,
   };
 }

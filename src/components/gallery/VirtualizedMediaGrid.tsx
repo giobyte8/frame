@@ -3,7 +3,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { isKeyboardSelect } from '../../services/keyboardSvc';
 import { thumbsFor, ThumbWidth } from '../../services/thumbSvc';
-import type { GridProps } from './grid/types';
+import type { ViewerProps } from './viewer/types';
 
 const GRID_GAP_PX = 16;
 const OVERSCAN_ITEMS = 16;
@@ -59,7 +59,7 @@ const S = {
   `,
 };
 
-const VirtualizedMediaGrid: React.FC<GridProps> = ({ mediaItems, onMediaClick }) => {
+const VirtualizedMediaGrid: React.FC<ViewerProps> = ({ mediaItems, onMediaClick }) => {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [containerWidth, setContainerWidth] = React.useState(1200);
   const [scrollMargin, setScrollMargin] = React.useState(0);

@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import styled from "styled-components";
 import { isKeyboardSelect } from '../../../services/keyboardSvc';
 import { thumbsFor, ThumbWidth } from '../../../services/thumbSvc';
-import type { GridProps } from './types';
+import type { ViewerProps } from './types';
 
 const S = {
   Grid: styled.div`
@@ -25,7 +25,7 @@ const S = {
     }
   `,
   Image: styled.img`
-    object-fit: contain;
+    object-fit: cover;
     width: 100%;
     height: 100%;
   `,
@@ -36,14 +36,14 @@ const S = {
   `,
 };
 
-const SquaredGrid: React.FC<GridProps> = ({
-  mediaItems, hasNextPage, fetchNextPage, isFetchingNextPage, onMediaClick
+const SquaredGrid: React.FC<ViewerProps> = ({
+  mediaItems, hasMore, fetchMore, isLoading, selectedMediaIdx, selectMedia
 }) => {
   const sentinelRef = React.useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
-    if (!sentinel || !hasNextPage) {
+    if (!sentinel || !hasMore) {
       return;
     }
 
@@ -51,8 +51,8 @@ const SquaredGrid: React.FC<GridProps> = ({
       (entries) => {
         const [entry] = entries;
 
-        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
+        if (entry.isIntersecting && hasMore && !isLoading) {
+          fetchMore();
         }
       },
       {
@@ -67,9 +67,10 @@ const SquaredGrid: React.FC<GridProps> = ({
     return () => {
       observer.disconnect();
     };
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+  }, [fetchMore, hasMore, isLoading]);
 
   console.debug('Rendering SquaredGrid with %s items', mediaItems.length);
+  console.debug('Selected media index: %s', selectedMediaIdx);
 
   return (
     <S.Grid>
@@ -81,18 +82,18 @@ const SquaredGrid: React.FC<GridProps> = ({
           role="button"
           tabIndex={0}
           aria-label={`Open ${mItem.path}`}
-          onClick={() => onMediaClick(mItem, idx)}
+          onClick={() => selectMedia(idx)}
           onKeyDown={(event) => {
             if (isKeyboardSelect(event)) {
               event.preventDefault();
-              onMediaClick(mItem, idx);
+              selectMedia(idx);
             }
           }}
         >
           <S.Image src={thumbUri} alt={mItem.path} loading="lazy" />
         </S.GridItem>;
       })}
-      {hasNextPage && <S.Sentinel ref={sentinelRef} aria-hidden="true" />}
+      {hasMore && <S.Sentinel ref={sentinelRef} aria-hidden="true" />}
     </S.Grid>
   );
 };

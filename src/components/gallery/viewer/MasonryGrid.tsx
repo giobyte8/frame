@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import styled from 'styled-components';
 import { isKeyboardSelect } from '../../../services/keyboardSvc';
 import { thumbsFor, ThumbWidth } from '../../../services/thumbSvc';
-import type { GridProps } from './types';
+import type { ViewerProps } from './types';
 
 const S = {
   Masonry: styled.div`
@@ -63,14 +63,14 @@ const S = {
   `,
 };
 
-const MasonryGrid: React.FC<GridProps> = ({
-  mediaItems, hasNextPage, fetchNextPage, isFetchingNextPage, onMediaClick
+const MasonryGrid: React.FC<ViewerProps> = ({
+  mediaItems, hasMore, fetchMore, isLoading, selectedMediaIdx, selectMedia
 }) => {
   const sentinelRef = React.useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
-    if (!sentinel || !hasNextPage) {
+    if (!sentinel || !hasMore) {
       return;
     }
 
@@ -78,8 +78,8 @@ const MasonryGrid: React.FC<GridProps> = ({
       (entries) => {
         const [entry] = entries;
 
-        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
+        if (entry.isIntersecting && hasMore && !isLoading) {
+          fetchMore();
         }
       },
       {
@@ -94,7 +94,7 @@ const MasonryGrid: React.FC<GridProps> = ({
     return () => {
       observer.disconnect();
     };
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+  }, [fetchMore, hasMore, isLoading]);
 
   return (
     <S.Masonry>
@@ -106,18 +106,18 @@ const MasonryGrid: React.FC<GridProps> = ({
             role="button"
             tabIndex={0}
             aria-label={`Open ${mItem.path}`}
-            onClick={() => onMediaClick(mItem, idx)}
+            onClick={() => selectMedia(idx)}
             onKeyDown={(event) => {
               if (isKeyboardSelect(event)) {
                 event.preventDefault();
-                onMediaClick(mItem, idx);
+                selectMedia(idx);
               }
             }}
           >
             <S.Image src={thumbnailUri} alt={mItem.path} loading="lazy" decoding="async" />
         </S.GridItem>
       })}
-      {hasNextPage && <S.Sentinel ref={sentinelRef} aria-hidden="true" />}
+      {hasMore && <S.Sentinel ref={sentinelRef} aria-hidden="true" />}
     </S.Masonry>
   );
 };

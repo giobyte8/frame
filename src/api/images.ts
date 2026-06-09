@@ -32,6 +32,8 @@ export async function fetchMediaPage(
     page: number,
     pageSize: number
 ): Promise<Page<MediaItem>> {
+    console.debug('Fetching media page %s for directory %s', page, directoryId);
+
     const { data } = await apiClient.get<Page<MediaItem>>(
         `/directories/${directoryId}/media`,
         { params: {

@@ -1,13 +1,14 @@
 import { Alert, Empty, Skeleton } from 'antd';
-import React, { useMemo } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useDirectories } from '../../hooks/useDirectories';
-import { useGalleryMediaInfinite } from '../../hooks/useGalleryMedia';
-import { useMediaViewer } from '../../hooks/useMediaViewer';
+import { useGalleryMedia } from '../../hooks/useGalleryMedia';
 import type { UUID } from '../../types/api';
+
 import { DirectoriesGrid } from '../directories/DirectoriesGrid';
-import MediaViewer from './viewer/MediaViewer';
-import SquaredGrid from './grid/SquaredGrid';
+import SquaredGrid from './viewer/SquaredGrid';
+import MasonryGrid from './viewer/MasonryGrid';
+import Slider from './viewer/Slider';
 
 const S = {
   Wrapper: styled.div`
@@ -22,36 +23,28 @@ interface GalleryProps {
 
 
 const Gallery: React.FC<GalleryProps> = ({ directoryId }) => {
+  const [selectedMediaIdx, setSelectedMediaIdx] = useState<number | null>(null);
+
   const {
     page: directoriesPage,
     isLoading: isLoadingDirectories,
     error: directoriesError,
   } = useDirectories(directoryId);
 
-  // Fetch media items for current directory
-  const infiniteMedia = useGalleryMediaInfinite(directoryId);
+  const {
+    items: mediaItems,
+    isLoading: isLoadingMedia,
+    isLoadingMore: isLoadingMoreMedia,
+    error: mediaError,
+    hasMore,
+    fetchMore,
+  } = useGalleryMedia(directoryId);
 
-  // Join (flatten) all media items from paginated results
-  // useMemo avoids re-flattening the pages array on every render
-  const mediaItems = useMemo(
-    () => infiniteMedia.pages?.flatMap(page => page.content) ?? [],
-    [infiniteMedia.pages]
-  );
-  const totalCount = infiniteMedia.pages?.[0]?.totalElements ?? mediaItems.length;
-
-  const viewer = useMediaViewer({
-    mediaItems,
-    hasNextPage: infiniteMedia.hasNextPage,
-    isFetchingNextPage: infiniteMedia.isFetchingNextPage,
-    fetchNextPage: infiniteMedia.fetchNextPage,
-    directoryId,
-  });
-
-  if (infiniteMedia.isLoading || isLoadingDirectories) {
+  if (isLoadingMedia || isLoadingDirectories) {
     return <Skeleton active paragraph={{ rows: 10 }} />;
   }
 
-  const error = infiniteMedia.error ?? directoriesError;
+  const error = mediaError ?? directoriesError;
   if (error) {
     return <Alert type="error" showIcon title="Error loading gallery" description={error.message} />;
   }
@@ -60,35 +53,35 @@ const Gallery: React.FC<GalleryProps> = ({ directoryId }) => {
     return <Empty description="No media found for this directory" />;
   }
 
-  return (
-    <>
-      <S.Wrapper>
-        {directoriesPage.content.length > 0 && (
-          <DirectoriesGrid directories={directoriesPage.content} />
-        )}
-
-        <SquaredGrid
-          mediaItems={mediaItems}
-          hasNextPage={infiniteMedia.hasNextPage}
-          fetchNextPage={infiniteMedia.fetchNextPage}
-          isFetchingNextPage={infiniteMedia.isFetchingNextPage}
-          onMediaClick={viewer.open}
-        />
-      </S.Wrapper>
-
-      <MediaViewer
-        isOpen={viewer.isOpen}
-        media={viewer.activeMedia}
-        activeIndex={viewer.activeIdx}
-        totalCount={totalCount}
-        hasPrev={viewer.hasPrev}
-        hasNext={viewer.hasNext}
-        isLoadingAdjacent={viewer.isLoadingAdjacent}
-        onClose={viewer.close}
-        onPrev={viewer.prev}
-        onNext={viewer.next}
+  if (selectedMediaIdx !== null) {
+    return (
+      <Slider
+        mediaItems={mediaItems}
+        hasMore={hasMore}
+        fetchMore={fetchMore}
+        isLoading={isLoadingMoreMedia}
+        selectedMediaIdx={selectedMediaIdx}
+        selectMedia={idx => setSelectedMediaIdx(idx)}
       />
-    </>
+    );
+  }
+
+  return (
+    <S.Wrapper>
+      {directoriesPage.content.length > 0 && (
+        <DirectoriesGrid directories={directoriesPage.content} />
+      )}
+
+      <SquaredGrid
+        mediaItems={mediaItems}
+        hasMore={hasMore}
+        fetchMore={fetchMore}
+        isLoading={isLoadingMoreMedia}
+
+        selectedMediaIdx={selectedMediaIdx}
+        selectMedia={idx => setSelectedMediaIdx(idx)}
+      />
+    </S.Wrapper>
   );
 };
 
