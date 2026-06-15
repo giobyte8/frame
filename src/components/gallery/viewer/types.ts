@@ -6,6 +6,6 @@ export interface ViewerProps {
   hasMore: boolean;
   fetchMore: () => void;
 
-  selectedMediaIdx: number | null;
+  selectedMediaIdx: number;
   selectMedia: (idx: number) => void;
 }

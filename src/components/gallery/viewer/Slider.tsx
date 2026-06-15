@@ -5,6 +5,15 @@ import * as mediaSvc from '../../../services/mediaSvc';
 
 import type { ViewerProps } from './types';
 
+export interface SliderProps extends ViewerProps {
+
+  /**
+   * Function to invoke when the slider should be closed.
+   * i.e. User hits 'ESC' or clicks the 'x' button
+   */
+  onClose: () => void;
+}
+
 const S = {
   Slider: styled.div`
     background: rgba(0, 0, 0, 0.8);
@@ -43,10 +52,16 @@ function useKeyboardNav(
   selectedMediaIdx: number | null,
   itemCount: number,
   selectMedia: (idx: number) => void,
+  onClose: () => void
 ) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (selectedMediaIdx === null) return;
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
 
       if (e.key === 'ArrowLeft' && selectedMediaIdx > 0) {
         e.preventDefault();
@@ -59,16 +74,16 @@ function useKeyboardNav(
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedMediaIdx, itemCount, selectMedia]);
+  }, [selectedMediaIdx, itemCount, selectMedia, onClose]);
 }
 
-const Slider: React.FC<ViewerProps> = ({
-  mediaItems, hasMore, fetchMore, isLoading, selectedMediaIdx, selectMedia
+const Slider: React.FC<SliderProps> = ({
+  mediaItems, hasMore, fetchMore, isLoading, selectedMediaIdx, selectMedia, onClose
 }) => {
   console.debug('Rendering Slider with %s items', mediaItems.length);
   console.debug('Selected media index: %s', selectedMediaIdx);
 
-  useKeyboardNav(selectedMediaIdx, mediaItems.length, selectMedia);
+  useKeyboardNav(selectedMediaIdx, mediaItems.length, selectMedia, onClose);
 
   const mediaItem = mediaItems[selectedMediaIdx!];
 
