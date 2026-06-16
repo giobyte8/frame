@@ -1,5 +1,5 @@
 import { Alert, Empty, Skeleton } from 'antd';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useDirectories } from '../../hooks/useDirectories';
 import { useGalleryMedia } from '../../hooks/useGalleryMedia';
@@ -15,6 +15,7 @@ const S = {
   Wrapper: styled.div`
     display: grid;
     gap: ${({ theme }) => theme.spacing.lg};
+    padding: ${({ theme }) => theme.spacing.md};
   `,
 };
 
@@ -23,6 +24,43 @@ type DisplayMode = 'squared' | 'masonry' | 'slider';
 
 interface GalleryProps {
   directoryId: UUID
+}
+
+/**
+ * Setups keyboard navigation for all display modes
+ */
+function useKeyboardNav(
+  selectedMediaIdx: number,
+  setSelectedMediaIdx: (idx: number) => void,
+
+  mediaItemsCount: number,
+  loadingMore: boolean,
+  hasMore: boolean,
+  fetchMore: () => void
+) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+
+      if (e.key === 'ArrowLeft' && selectedMediaIdx > 0) {
+        e.preventDefault();
+        setSelectedMediaIdx(selectedMediaIdx - 1);
+      }
+
+      else if (e.key === 'ArrowRight' && selectedMediaIdx < mediaItemsCount - 1) {
+        e.preventDefault();
+        setSelectedMediaIdx(selectedMediaIdx + 1);
+
+        // Load more?
+        const reachingEnd = selectedMediaIdx >= mediaItemsCount - 10;
+        if (reachingEnd && hasMore && !loadingMore) {
+          fetchMore();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedMediaIdx, setSelectedMediaIdx, mediaItemsCount, hasMore, loadingMore, fetchMore]);
 }
 
 
@@ -47,6 +85,16 @@ const Gallery: React.FC<GalleryProps> = ({ directoryId }) => {
     fetchMore,
   } = useGalleryMedia(directoryId);
 
+  useKeyboardNav(
+    selectedMediaIdx,
+    setSelectedMediaIdx,
+    mediaItems.length,
+    isLoadingMoreMedia,
+    hasMore,
+    fetchMore
+  );
+
+
   if (isLoadingMedia || isLoadingDirectories) {
     return <Skeleton active paragraph={{ rows: 10 }} />;
   }
@@ -66,15 +114,7 @@ const Gallery: React.FC<GalleryProps> = ({ directoryId }) => {
     hasMore,
     fetchMore,
     isLoading: isLoadingMoreMedia,
-    selectedMediaIdx,
-    selectMedia: idx => {
-      setSelectedMediaIdx(idx);
-
-      if (displayMode !== 'slider') {
-        setPrevDisplayMode(displayMode);
-        setDisplayMode('slider');
-      }
-    },
+    selectedMediaIdx
   };
 
   switch (displayMode) {
@@ -84,7 +124,15 @@ const Gallery: React.FC<GalleryProps> = ({ directoryId }) => {
           <DirectoriesGrid directories={directoriesPage.content} />
         )}
 
-        <SquaredGrid {...viewerProps} />
+        <SquaredGrid
+          {...viewerProps}
+          openMedia={(idx) => {
+            setSelectedMediaIdx(idx);
+
+            setPrevDisplayMode(displayMode);
+            setDisplayMode('slider');
+          }}
+        />
       </S.Wrapper>;
 
     case 'masonry':

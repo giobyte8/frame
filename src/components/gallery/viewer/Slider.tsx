@@ -3,16 +3,7 @@ import styled from 'styled-components';
 import { thumbsFor, ThumbWidth } from '../../../services/thumbSvc';
 import * as mediaSvc from '../../../services/mediaSvc';
 
-import type { ViewerProps } from './types';
-
-export interface SliderProps extends ViewerProps {
-
-  /**
-   * Function to invoke when the slider should be closed.
-   * i.e. User hits 'ESC' or clicks the 'x' button
-   */
-  onClose: () => void;
-}
+import type { SliderViewerProps } from './types';
 
 const S = {
   Slider: styled.div`
@@ -26,7 +17,7 @@ const S = {
   `,
 
   MediaFrame: styled.div`
-    border: 1px solid red;
+    // border: 1px solid red;
     height: 100%;
   `,
 
@@ -49,41 +40,29 @@ const S = {
 };
 
 function useKeyboardNav(
-  selectedMediaIdx: number | null,
-  itemCount: number,
-  selectMedia: (idx: number) => void,
   onClose: () => void
 ) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (selectedMediaIdx === null) return;
 
       if (e.key === 'Escape') {
         e.preventDefault();
         onClose();
       }
-
-      if (e.key === 'ArrowLeft' && selectedMediaIdx > 0) {
-        e.preventDefault();
-        selectMedia(selectedMediaIdx - 1);
-      } else if (e.key === 'ArrowRight' && selectedMediaIdx < itemCount - 1) {
-        e.preventDefault();
-        selectMedia(selectedMediaIdx + 1);
-      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedMediaIdx, itemCount, selectMedia, onClose]);
+  }, [onClose]);
 }
 
-const Slider: React.FC<SliderProps> = ({
-  mediaItems, hasMore, fetchMore, isLoading, selectedMediaIdx, selectMedia, onClose
+const Slider: React.FC<SliderViewerProps> = ({
+  mediaItems, selectedMediaIdx, onClose
 }) => {
   console.debug('Rendering Slider with %s items', mediaItems.length);
   console.debug('Selected media index: %s', selectedMediaIdx);
 
-  useKeyboardNav(selectedMediaIdx, mediaItems.length, selectMedia, onClose);
+  useKeyboardNav(onClose);
 
   const mediaItem = mediaItems[selectedMediaIdx!];
 

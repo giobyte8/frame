@@ -1,9 +1,9 @@
 import React from "react";
 import { useEffect } from "react";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { isKeyboardSelect } from '../../../services/keyboardSvc';
 import { thumbsFor, ThumbWidth } from '../../../services/thumbSvc';
-import type { ViewerProps } from './types';
+import type { GridViewerProps } from './types';
 
 const S = {
   Grid: styled.div`
@@ -11,13 +11,17 @@ const S = {
     gap: ${({ theme }) => theme.spacing.md};
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   `,
-  GridItem: styled.div`
+  GridItem: styled.div<{ isSelected: boolean }>`
     background: ${({ theme }) => theme.colors.surface};
     border: 1px solid ${({ theme }) => theme.colors.border};
     border-radius: ${({ theme }) => theme.radius.md};
     height: 400px;
     overflow: hidden;
     cursor: pointer;
+
+    ${({ isSelected, theme }) => isSelected && css`
+      border: 1px solid ${theme.colors.dangerBorder};
+    `}
 
     &:focus-visible {
       outline: 2px solid ${({ theme }) => theme.colors.textMuted};
@@ -36,8 +40,8 @@ const S = {
   `,
 };
 
-const SquaredGrid: React.FC<ViewerProps> = ({
-  mediaItems, hasMore, fetchMore, isLoading, selectedMediaIdx, selectMedia
+const SquaredGrid: React.FC<GridViewerProps> = ({
+  mediaItems, hasMore, fetchMore, isLoading, selectedMediaIdx, openMedia
 }) => {
   const sentinelRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -82,11 +86,13 @@ const SquaredGrid: React.FC<ViewerProps> = ({
           role="button"
           tabIndex={0}
           aria-label={`Open ${mItem.path}`}
-          onClick={() => selectMedia(idx)}
+
+          isSelected={selectedMediaIdx === idx}
+          onClick={() => openMedia(idx)}
           onKeyDown={(event) => {
             if (isKeyboardSelect(event)) {
               event.preventDefault();
-              selectMedia(idx);
+              openMedia(idx);
             }
           }}
         >

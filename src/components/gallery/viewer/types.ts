@@ -7,5 +7,12 @@ export interface ViewerProps {
   fetchMore: () => void;
 
   selectedMediaIdx: number;
-  selectMedia: (idx: number) => void;
+}
+
+export interface GridViewerProps extends ViewerProps {
+  openMedia: (idx: number) => void;
+}
+
+export interface SliderViewerProps extends ViewerProps {
+  onClose: () => void;
 }
