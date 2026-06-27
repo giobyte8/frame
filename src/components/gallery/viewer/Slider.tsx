@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react'
 import styled from 'styled-components';
-import { thumbsFor, ThumbWidth } from '../../../services/thumbSvc';
 import * as mediaSvc from '../../../services/mediaSvc';
 
 import type { SliderViewerProps } from './types';
@@ -71,7 +70,7 @@ const Slider: React.FC<SliderViewerProps> = ({
       <S.MediaFrame>
         {mediaSvc.isImage(mediaItem) && (
           <S.Image
-            src={thumbsFor(mediaItem)[ThumbWidth.PX_512]}
+            src={mediaSvc.urlFor(mediaItem)}
             alt={mediaItem.path}
           />
         )}

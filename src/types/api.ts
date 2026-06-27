@@ -39,6 +39,7 @@ export interface MediaItem {
 
   status: string,
   mediaType: string
+  format: string;
 }
 
 export interface Page<T> {
