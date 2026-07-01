@@ -16,6 +16,7 @@ const S = {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: ${({ theme }) => theme.spacing.md};
+    padding: ${({ theme }) => `${theme.spacing.md} ${theme.spacing.md} 0`};
   `,
   Card: styled(Card)`
     cursor: pointer;

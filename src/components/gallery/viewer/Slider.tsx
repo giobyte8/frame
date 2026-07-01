@@ -1,40 +1,60 @@
 import React, { useEffect } from 'react'
 import styled from 'styled-components';
-import * as mediaSvc from '../../../services/mediaSvc';
+import { Button } from 'antd';
+import {
+  PauseOutlined,
+  PauseCircleOutlined,
+  PlayCircleOutlined,
+} from '@ant-design/icons';
 
 import type { SliderViewerProps } from './types';
+import * as mediaSvc from '../../../services/mediaSvc';
+import Toolbar from '../Toolbar';
 
 const S = {
   Slider: styled.div`
-    background: rgba(0, 0, 0, 0.8);
-    width: 100vw;
-    height: 100dvh;
+    background: rgba(0, 0, 0, 0.91);
+
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: ${({ theme }) => `${theme.spacing.md} 0`};
+    flex-direction: column;
+    height: 100dvh;
+    width: 100vw;
+
+    max-height: 100%;
+  `,
+
+  TBWrapper: styled.div`
+    flex-shrink: 0;
   `,
 
   MediaFrame: styled.div`
-    // border: 1px solid red;
-    height: 100%;
+    flex-grow: 1;
+    overflow-y: auto;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    box-sizing: border-box;
   `,
 
   Image: styled.img`
-    display: block;
-    height: 100%;
+    width: auto;
+    height: auto;
+
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
   `,
 
   Video: styled.video`
-    display: block;
-    height: 100%;
+    width: auto;
+    height: auto;
+
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-    background: #000000;
+    // background: #000000;
   `,
 };
 
@@ -53,6 +73,10 @@ function useKeyboardNav(
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
+}
+
+function useSlideshow() {
+
 }
 
 const Slider: React.FC<SliderViewerProps> = ({
@@ -85,6 +109,18 @@ const Slider: React.FC<SliderViewerProps> = ({
           />
         )}
       </S.MediaFrame>
+
+      <S.TBWrapper>
+        <Toolbar>
+
+          <Button
+            icon={ <PauseOutlined /> }
+            type="text"
+          >
+            Slideshow
+          </Button>
+        </Toolbar>
+      </S.TBWrapper>
     </S.Slider>
   );
 }

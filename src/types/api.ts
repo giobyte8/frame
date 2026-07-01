@@ -8,6 +8,11 @@ export interface Directory {
   version: number;
 }
 
+export interface DirWithLineage {
+  directory: Directory;
+  lineage: Directory[];
+}
+
 export type ISODateString = string;
 
 export interface Image {

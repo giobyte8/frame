@@ -1,4 +1,4 @@
-import type { Directory, Page } from '../types/api';
+import type { Directory, DirWithLineage, Page } from '../types/api';
 import type { UUID } from '../types/api';
 import { apiClient } from './client';
 
@@ -17,9 +17,9 @@ export async function fetchDirectories(directoryId: UUID): Promise<Page<Director
   return data;
 }
 
-export async function fetchDirectory(directoryId: UUID): Promise<Directory> {
+export async function fetchDirWithLineage(directoryId: UUID): Promise<DirWithLineage> {
   const { data } = await apiClient
-    .get<Directory>(`/directories/${directoryId}`);
+    .get<DirWithLineage>(`/directories/${directoryId}`);
 
   return data;
 }

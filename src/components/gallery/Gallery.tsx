@@ -1,18 +1,24 @@
-import { Alert, Empty, Skeleton } from 'antd';
+import {
+  Alert,
+  Divider,
+  Empty,
+  Skeleton
+} from 'antd';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { useDirectories } from '../../hooks/useDirectories';
-import { useGalleryMedia } from '../../hooks/useGalleryMedia';
-import type { UUID } from '../../types/api';
 
-import { DirectoriesGrid } from '../directories/DirectoriesGrid';
 import SquaredGrid from './viewer/SquaredGrid';
 import MasonryGrid from './viewer/MasonryGrid';
 import Slider from './viewer/Slider';
+import { useDirectories } from '../../hooks/useDirectories';
+import { useGalleryMedia } from '../../hooks/useGalleryMedia';
+import { DirectoriesGrid } from '../directories/DirectoriesGrid';
+
+import type { UUID } from '../../types/api';
 import type { ViewerProps } from './viewer/types';
 
 const S = {
-  Wrapper: styled.div`
+  GridWrapper: styled.div`
     display: grid;
     gap: ${({ theme }) => theme.spacing.lg};
     padding: ${({ theme }) => theme.spacing.md};
@@ -85,6 +91,8 @@ const Gallery: React.FC<GalleryProps> = ({ directoryId }) => {
     fetchMore,
   } = useGalleryMedia(directoryId);
 
+
+
   useKeyboardNav(
     selectedMediaIdx,
     setSelectedMediaIdx,
@@ -119,7 +127,7 @@ const Gallery: React.FC<GalleryProps> = ({ directoryId }) => {
 
   switch (displayMode) {
     case 'squared':
-      return <S.Wrapper>
+      return <>
         {directoriesPage.content.length > 0 && (
           <DirectoriesGrid directories={directoriesPage.content} />
         )}
@@ -133,16 +141,16 @@ const Gallery: React.FC<GalleryProps> = ({ directoryId }) => {
             setDisplayMode('slider');
           }}
         />
-      </S.Wrapper>;
+      </>;
 
     case 'masonry':
-      return <S.Wrapper>
+      return <S.GridWrapper>
         {directoriesPage.content.length > 0 && (
           <DirectoriesGrid directories={directoriesPage.content} />
         )}
 
         <MasonryGrid {...viewerProps} />
-      </S.Wrapper>;
+      </S.GridWrapper>;
 
     case 'slider':
       return <Slider

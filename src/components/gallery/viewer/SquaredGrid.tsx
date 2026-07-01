@@ -4,12 +4,14 @@ import styled, { css } from "styled-components";
 import { isKeyboardSelect } from '../../../services/keyboardSvc';
 import { thumbsFor, ThumbWidth } from '../../../services/thumbSvc';
 import type { GridViewerProps } from './types';
+import Toolbar from "../Toolbar";
 
 const S = {
   Grid: styled.div`
     display: grid;
     gap: ${({ theme }) => theme.spacing.md};
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    padding: ${({ theme }) => theme.spacing.md};
   `,
   GridItem: styled.div<{ isSelected: boolean }>`
     background: ${({ theme }) => theme.colors.surface};
@@ -28,6 +30,12 @@ const S = {
       outline-offset: 2px;
     }
   `,
+
+  TBWrapper: styled.div`
+    position: sticky;
+    bottom: 0;
+  `,
+
   Image: styled.img`
     object-fit: cover;
     width: 100%;
@@ -76,7 +84,7 @@ const SquaredGrid: React.FC<GridViewerProps> = ({
   console.debug('Rendering SquaredGrid with %s items', mediaItems.length);
   console.debug('Selected media index: %s', selectedMediaIdx);
 
-  return (
+  return <>
     <S.Grid>
       { mediaItems.map((mItem, idx) => {
         const thumbUri = thumbsFor(mItem)[ThumbWidth.PX_512];
@@ -101,7 +109,11 @@ const SquaredGrid: React.FC<GridViewerProps> = ({
       })}
       {hasMore && <S.Sentinel ref={sentinelRef} aria-hidden="true" />}
     </S.Grid>
-  );
+
+    <S.TBWrapper>
+      <Toolbar />
+    </S.TBWrapper>
+  </>;
 };
 
 export default SquaredGrid;

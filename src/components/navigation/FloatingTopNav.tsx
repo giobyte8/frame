@@ -11,7 +11,7 @@ import { Button, Space, Tooltip, Typography } from 'antd';
 import styled from 'styled-components';
 
 import type { UUID } from '../../types/api';
-import { useDirectory } from '../../hooks/useDirectory';
+import { useDirWithLineage } from '../../hooks/useDirectory';
 import { basename } from '../../services/pathSvc';
 
 
@@ -80,13 +80,16 @@ const S = {
 };
 
 const LeftNav: React.FC = () => {
+  const enabled = false;
+  if (!enabled) return null;
+
   const { directoryId } = useParams<{ directoryId: UUID }>();
   const navigate = useNavigate();
   const {
     directory,
     isLoading,
     error
-  } = useDirectory(directoryId);
+  } = useDirWithLineage(directoryId);
 
   if (!directoryId) return null;
 

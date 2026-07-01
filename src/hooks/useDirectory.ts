@@ -1,28 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchDirectory } from "../api/directories";
-import type { Directory, UUID } from "../types/api";
+import { fetchDirWithLineage } from "../api/directories";
+import type { DirWithLineage, UUID } from "../types/api";
 
 interface UseDirectoryResult {
-  directory: Directory | null;
+  dirWithLineage: DirWithLineage | null;
   isLoading: boolean;
   error: Error | null;
 }
 
 /**
- * Fetches details of a single directory by its ID.
+ * Fetches details of a single directory along with its lineage by its ID.
  *
  * @param directoryId Directory Id
- * @returns Fetched directory
+ * @returns Fetched directory with lineage
  */
-export function useDirectory(directoryId?: UUID): UseDirectoryResult {
+export function useDirWithLineage(directoryId?: UUID): UseDirectoryResult {
     const { data, isLoading, error } = useQuery({
       queryKey: ['directory', directoryId],
-      queryFn: () => fetchDirectory(directoryId as UUID),
+      queryFn: () => fetchDirWithLineage(directoryId as UUID),
       enabled: !!directoryId,
     });
 
     return {
-        directory: data ?? null,
+        dirWithLineage: data ?? null,
         isLoading,
         error: error instanceof Error ? error : null,
     };
