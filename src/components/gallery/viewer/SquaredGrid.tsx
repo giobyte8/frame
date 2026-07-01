@@ -1,10 +1,11 @@
-import React from "react";
-import { useEffect } from "react";
-import styled, { css } from "styled-components";
+import React, { useCallback, useContext, useEffect } from 'react';
+import styled, { css } from 'styled-components';
+
+import type { GalleryMedia } from "../../../hooks/useGalleryMedia";
+import Toolbar from "../Toolbar";
 import { isKeyboardSelect } from '../../../services/keyboardSvc';
 import { thumbsFor, ThumbWidth } from '../../../services/thumbSvc';
-import type { GridViewerProps } from './types';
-import Toolbar from "../Toolbar";
+import { GalleryCtx } from "../Gallery";
 
 const S = {
   Grid: styled.div`
@@ -48,14 +49,21 @@ const S = {
   `,
 };
 
-const SquaredGrid: React.FC<GridViewerProps> = ({
-  mediaItems, hasMore, fetchMore, isLoading, selectedMediaIdx, openMedia
-}) => {
+/**
+ * Setups a sentinel observer to fetch more media items when the sentinel
+ * is visible (or close to be) in the viewport.
+ *
+ * Use this for infinite scrolling in the gallery.
+ *
+ * @param media Current gallery media
+ */
+const useSentinelObserver = (media: GalleryMedia):
+    React.RefObject<HTMLDivElement | null> => {
   const sentinelRef = React.useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
-    if (!sentinel || !hasMore) {
+    if (!sentinel || !media.canFetchMore) {
       return;
     }
 
@@ -63,8 +71,8 @@ const SquaredGrid: React.FC<GridViewerProps> = ({
       (entries) => {
         const [entry] = entries;
 
-        if (entry.isIntersecting && hasMore && !isLoading) {
-          fetchMore();
+        if (entry.isIntersecting && media.canFetchMore && !media.isLoadingMore) {
+          media.fetchMore();
         }
       },
       {
@@ -79,14 +87,32 @@ const SquaredGrid: React.FC<GridViewerProps> = ({
     return () => {
       observer.disconnect();
     };
-  }, [fetchMore, hasMore, isLoading]);
+  }, [media.fetchMore, media.canFetchMore, media.isLoadingMore]);
 
-  console.debug('Rendering SquaredGrid with %s items', mediaItems.length);
+  return sentinelRef;
+}
+
+const SquaredGrid: React.FC = _ => {
+  const {
+    media,
+    selectedMediaIdx, setSelectedMediaIdx,
+    setPrevDisplayMode, setDisplayMode
+  } = useContext(GalleryCtx);
+  const sentinelRef = useSentinelObserver(media);
+
+  const openMedia = useCallback((idx: number) => {
+    setSelectedMediaIdx(idx);
+
+    setPrevDisplayMode('squared');
+    setDisplayMode('slider');
+  }, [setSelectedMediaIdx, setPrevDisplayMode, setDisplayMode]);
+
+  console.debug('Rendering SquaredGrid with %s items', media.items.length);
   console.debug('Selected media index: %s', selectedMediaIdx);
 
   return <>
     <S.Grid>
-      { mediaItems.map((mItem, idx) => {
+      { media.items.map((mItem, idx) => {
         const thumbUri = thumbsFor(mItem)[ThumbWidth.PX_512];
 
         return <S.GridItem
@@ -107,7 +133,8 @@ const SquaredGrid: React.FC<GridViewerProps> = ({
           <S.Image src={thumbUri} alt={mItem.path} loading="lazy" />
         </S.GridItem>;
       })}
-      {hasMore && <S.Sentinel ref={sentinelRef} aria-hidden="true" />}
+
+      {media.canFetchMore && <S.Sentinel ref={sentinelRef} aria-hidden="true" />}
     </S.Grid>
 
     <S.TBWrapper>

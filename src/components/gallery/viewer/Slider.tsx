@@ -1,15 +1,16 @@
-import React, { useEffect } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components';
 import { Button } from 'antd';
 import {
   PauseOutlined,
-  PauseCircleOutlined,
   PlayCircleOutlined,
 } from '@ant-design/icons';
 
-import type { SliderViewerProps } from './types';
 import * as mediaSvc from '../../../services/mediaSvc';
 import Toolbar from '../Toolbar';
+import { GalleryCtx, type DisplayMode } from '../Gallery';
+import { useKeyboardHandler } from '../../../services/keyboardSvc';
+import type { GalleryMedia } from '../../../hooks/useGalleryMedia';
 
 const S = {
   Slider: styled.div`
@@ -58,36 +59,107 @@ const S = {
   `,
 };
 
-function useKeyboardNav(
-  onClose: () => void
+function nextMediaItem(
+  media: GalleryMedia,
+  selectedMediaIdx: number,
+  setSelectedMediaIdx: (idx: number) => void
 ) {
+  if (selectedMediaIdx < media.items.length - 1) {
+    setSelectedMediaIdx(selectedMediaIdx + 1);
+
+    // Trigger fetching more?
+    const reachingEnd = selectedMediaIdx >= media.items.length - 10;
+    if (reachingEnd && media.canFetchMore && !media.isLoadingMore) {
+      media.fetchMore();
+    }
+  }
+}
+
+function prevMediaItem(
+  selectedMediaIdx: number,
+  setSelectedMediaIdx: (idx: number) => void
+) {
+  if (selectedMediaIdx > 0) {
+    setSelectedMediaIdx(selectedMediaIdx - 1);
+  }
+}
+
+function useKeyboardNav(
+  media: GalleryMedia,
+
+  selectedMediaIdx: number,
+  setSelectedMediaIdx: (idx: number) => void,
+
+  prevDisplayMode: DisplayMode,
+  setDisplayMode: (mode: DisplayMode) => void,
+) {
+
+  useKeyboardHandler('Escape', useCallback(() => {
+    setDisplayMode(prevDisplayMode);
+  }, [setDisplayMode, prevDisplayMode]));
+
+  // Prev item navigation
+  useKeyboardHandler('ArrowLeft', useCallback(() => {
+    prevMediaItem(selectedMediaIdx, setSelectedMediaIdx);
+  }, [selectedMediaIdx, setSelectedMediaIdx]));
+
+  // Next item navigation
+  useKeyboardHandler('ArrowRight', useCallback(() => {
+    nextMediaItem(media, selectedMediaIdx, setSelectedMediaIdx);
+  }, [media, selectedMediaIdx, setSelectedMediaIdx]));
+}
+
+function useSlideshow(
+  media: GalleryMedia,
+  selectedMediaIdx: number,
+  setSelectedMediaIdx: (idx: number) => void,
+) {
+  const [playingSlideshow, setPlayingSlideshow] = useState<boolean>(false);
+
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    if (!playingSlideshow) {
+      return;
+    }
 
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        onClose();
-      }
-    };
+    const interval = setTimeout(() => {
+      console.debug('Slideshow advancing to next media item');
+      nextMediaItem(media, selectedMediaIdx, setSelectedMediaIdx);
+    }, 3000);
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+    return () => clearTimeout(interval);
+  }, [media, selectedMediaIdx, setSelectedMediaIdx, playingSlideshow]);
+
+  return {
+    playingSlideshow,
+    setPlayingSlideshow,
+  };
 }
 
-function useSlideshow() {
+const Slider: React.FC = _ => {
+  const {
+      media,
+      selectedMediaIdx, setSelectedMediaIdx,
+      prevDisplayMode, setDisplayMode,
+  } = useContext(GalleryCtx);
 
-}
+  useKeyboardNav(
+    media,
+    selectedMediaIdx,
+    setSelectedMediaIdx,
+    prevDisplayMode,
+    setDisplayMode
+  );
 
-const Slider: React.FC<SliderViewerProps> = ({
-  mediaItems, selectedMediaIdx, onClose
-}) => {
-  console.debug('Rendering Slider with %s items', mediaItems.length);
+  const { playingSlideshow, setPlayingSlideshow } = useSlideshow(
+    media,
+    selectedMediaIdx,
+    setSelectedMediaIdx
+  );
+
+  console.debug('Rendering Slider with %s items', media.items.length);
   console.debug('Selected media index: %s', selectedMediaIdx);
 
-  useKeyboardNav(onClose);
-
-  const mediaItem = mediaItems[selectedMediaIdx!];
+  const mediaItem = media.items[selectedMediaIdx!];
 
   return (
     <S.Slider>
@@ -114,8 +186,12 @@ const Slider: React.FC<SliderViewerProps> = ({
         <Toolbar>
 
           <Button
-            icon={ <PauseOutlined /> }
+            icon={ playingSlideshow
+              ? <PauseOutlined />
+              : <PlayCircleOutlined />
+            }
             type="text"
+            onClick={() => setPlayingSlideshow(!playingSlideshow)}
           >
             Slideshow
           </Button>

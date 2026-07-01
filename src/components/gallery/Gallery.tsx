@@ -1,162 +1,107 @@
-import {
-  Alert,
-  Divider,
-  Empty,
-  Skeleton
-} from 'antd';
-import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
+import React, { createContext, useState } from 'react';
 
 import SquaredGrid from './viewer/SquaredGrid';
 import MasonryGrid from './viewer/MasonryGrid';
 import Slider from './viewer/Slider';
 import { useDirectories } from '../../hooks/useDirectories';
-import { useGalleryMedia } from '../../hooks/useGalleryMedia';
+import { useGalleryMedia, type GalleryMedia } from '../../hooks/useGalleryMedia';
 import { DirectoriesGrid } from '../directories/DirectoriesGrid';
 
 import type { UUID } from '../../types/api';
-import type { ViewerProps } from './viewer/types';
 
-const S = {
-  GridWrapper: styled.div`
-    display: grid;
-    gap: ${({ theme }) => theme.spacing.lg};
-    padding: ${({ theme }) => theme.spacing.md};
-  `,
-};
 
 // Available display modes for the gallery
-type DisplayMode = 'squared' | 'masonry' | 'slider';
+export type DisplayMode = 'squared' | 'masonry' | 'slider';
 
-interface GalleryProps {
-  directoryId: UUID
+interface GalleryProps { directoryId: UUID }
+
+interface GalleryState {
+  media: GalleryMedia;
+
+  displayMode: DisplayMode;
+  setDisplayMode: (mode: DisplayMode) => void;
+
+  prevDisplayMode: DisplayMode;
+  setPrevDisplayMode: (mode: DisplayMode) => void;
+
+  selectedMediaIdx: number;
+  setSelectedMediaIdx: (idx: number) => void;
 }
 
-/**
- * Setups keyboard navigation for all display modes
- */
-function useKeyboardNav(
-  selectedMediaIdx: number,
-  setSelectedMediaIdx: (idx: number) => void,
+const defGalleryState: GalleryState = {
+  media: {
+    items: [],
+    isLoading: true,
+    isLoadingMore: false,
+    error: null,
+    canFetchMore: false,
+    fetchMore: () => {},
+  },
 
-  mediaItemsCount: number,
-  loadingMore: boolean,
-  hasMore: boolean,
-  fetchMore: () => void
-) {
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+  displayMode: 'squared',
+  setDisplayMode: _ => {},
 
-      if (e.key === 'ArrowLeft' && selectedMediaIdx > 0) {
-        e.preventDefault();
-        setSelectedMediaIdx(selectedMediaIdx - 1);
-      }
+  prevDisplayMode: 'squared',
+  setPrevDisplayMode: _ => {},
 
-      else if (e.key === 'ArrowRight' && selectedMediaIdx < mediaItemsCount - 1) {
-        e.preventDefault();
-        setSelectedMediaIdx(selectedMediaIdx + 1);
+  selectedMediaIdx: 0,
+  setSelectedMediaIdx: _ => {},
+};
 
-        // Load more?
-        const reachingEnd = selectedMediaIdx >= mediaItemsCount - 10;
-        if (reachingEnd && hasMore && !loadingMore) {
-          fetchMore();
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedMediaIdx, setSelectedMediaIdx, mediaItemsCount, hasMore, loadingMore, fetchMore]);
-}
-
+export const GalleryCtx = createContext<GalleryState>(defGalleryState);
 
 const Gallery: React.FC<GalleryProps> = ({ directoryId }) => {
   const [selectedMediaIdx, setSelectedMediaIdx] = useState<number>(0);
-
   const [displayMode, setDisplayMode] = useState<DisplayMode>('squared');
   const [prevDisplayMode, setPrevDisplayMode] = useState<DisplayMode>('squared');
 
-  const {
-    page: directoriesPage,
-    isLoading: isLoadingDirectories,
-    error: directoriesError,
-  } = useDirectories(directoryId);
+  const media = useGalleryMedia(directoryId);
 
-  const {
-    items: mediaItems,
-    isLoading: isLoadingMedia,
-    isLoadingMore: isLoadingMoreMedia,
-    error: mediaError,
-    hasMore,
-    fetchMore,
-  } = useGalleryMedia(directoryId);
-
-
-
-  useKeyboardNav(
-    selectedMediaIdx,
-    setSelectedMediaIdx,
-    mediaItems.length,
-    isLoadingMoreMedia,
-    hasMore,
-    fetchMore
-  );
-
-
-  if (isLoadingMedia || isLoadingDirectories) {
-    return <Skeleton active paragraph={{ rows: 10 }} />;
-  }
-
-  const error = mediaError ?? directoriesError;
-  if (error) {
-    return <Alert type="error" showIcon title="Error loading gallery" description={error.message} />;
-  }
-
-  if (!mediaItems.length && !directoriesPage.content.length) {
-    return <Empty description="No media found for this directory" />;
-  }
-
-  // Prepare viewer props for selected media viewer
-  var viewerProps: ViewerProps = {
-    mediaItems,
-    hasMore,
-    fetchMore,
-    isLoading: isLoadingMoreMedia,
-    selectedMediaIdx
+  const galleryState: GalleryState = {
+    media,
+    displayMode, setDisplayMode,
+    prevDisplayMode, setPrevDisplayMode,
+    selectedMediaIdx, setSelectedMediaIdx,
   };
+
+  const { page: directoriesPage } = useDirectories(directoryId);
+
+  // if (isLoadingMedia || isLoadingDirectories) {
+  //   return <Skeleton active paragraph={{ rows: 10 }} />;
+  // }
+
+  // const error = mediaError ?? directoriesError;
+  // if (error) {
+  //   return <Alert type="error" showIcon title="Error loading gallery" description={error.message} />;
+  // }
+
+  // if (!mediaItems.length && !directoriesPage.content.length) {
+  //   return <Empty description="No media found for this directory" />;
+  // }
 
   switch (displayMode) {
     case 'squared':
-      return <>
+      return <GalleryCtx value={ galleryState }>
         {directoriesPage.content.length > 0 && (
           <DirectoriesGrid directories={directoriesPage.content} />
         )}
 
-        <SquaredGrid
-          {...viewerProps}
-          openMedia={(idx) => {
-            setSelectedMediaIdx(idx);
+        <SquaredGrid/>
+      </GalleryCtx>;
 
-            setPrevDisplayMode(displayMode);
-            setDisplayMode('slider');
-          }}
-        />
-      </>;
+    // case 'masonry':
+    //   return <>
+    //     {directoriesPage.content.length > 0 && (
+    //       <DirectoriesGrid directories={directoriesPage.content} />
+    //     )}
 
-    case 'masonry':
-      return <S.GridWrapper>
-        {directoriesPage.content.length > 0 && (
-          <DirectoriesGrid directories={directoriesPage.content} />
-        )}
-
-        <MasonryGrid {...viewerProps} />
-      </S.GridWrapper>;
+    //     <MasonryGrid {...viewerProps} />
+    //   </>;
 
     case 'slider':
-      return <Slider
-        {...viewerProps}
-        onClose={() => setDisplayMode(prevDisplayMode)}
-      />;
+      return <GalleryCtx value={ galleryState }>
+        <Slider />
+      </GalleryCtx>;
   }
 };
 

@@ -63,7 +63,7 @@ const Toolbar = ({ children }: ToolbarProps) => {
 
       <Button
         icon={ <HomeOutlined /> }
-        onClick={ () => navigate('/gallery/root/') }
+        onClick={ () => navigate('/root/') }
         type="text"
       />
     </Space>

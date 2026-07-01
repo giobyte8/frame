@@ -3,7 +3,7 @@ import { fetchMediaPage } from '../api/images';
 import type { MediaItem, Page, UUID } from '../types/api';
 
 
-interface GalleryMedia {
+export interface GalleryMedia {
   items: MediaItem[];
   /** True on the initial fetch. */
   isLoading: boolean;
@@ -11,7 +11,7 @@ interface GalleryMedia {
   isLoadingMore: boolean;
   error: Error | null;
 
-  hasMore: boolean;
+  canFetchMore: boolean;
   fetchMore: () => void;
 }
 
@@ -54,7 +54,7 @@ export function useGalleryMedia(
     isLoadingMore: isFetchingNextPage,
     error: error instanceof Error ? error : null,
 
-    hasMore: hasNextPage,
+    canFetchMore: hasNextPage,
     fetchMore: fetchNextPage,
   };
 }
