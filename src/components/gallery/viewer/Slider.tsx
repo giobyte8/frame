@@ -117,7 +117,9 @@ function useSlideshow(
   const [playingSlideshow, setPlayingSlideshow] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!playingSlideshow) {
+    const mediaItem = media.items[selectedMediaIdx!];
+
+    if (!playingSlideshow || mediaItem.mediaType !== 'IMAGE') {
       return;
     }
 
@@ -178,6 +180,9 @@ const Slider: React.FC = _ => {
             playsInline
             controls
             preload="metadata"
+            onEnded={() => playingSlideshow && nextMediaItem(
+              media, selectedMediaIdx, setSelectedMediaIdx
+            )}
           />
         )}
       </S.MediaFrame>
