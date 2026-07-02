@@ -14,16 +14,17 @@ const S = {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     padding: ${({ theme }) => theme.spacing.md};
   `,
+
   GridItem: styled.div<{ isSelected: boolean }>`
     background: ${({ theme }) => theme.colors.surface};
-    border: 1px solid ${({ theme }) => theme.colors.border};
-    border-radius: ${({ theme }) => theme.radius.md};
-    height: 400px;
+    // border: 1px solid ${({ theme }) => theme.colors.border};
+    // border-radius: ${({ theme }) => theme.radius.md};
+    height: 300px;
     overflow: hidden;
     cursor: pointer;
 
     ${({ isSelected, theme }) => isSelected && css`
-      border: 1px solid ${theme.colors.dangerBorder};
+      // border: 1px solid ${theme.colors.dangerBorder};
     `}
 
     &:focus-visible {
@@ -38,7 +39,7 @@ const S = {
   `,
 
   Image: styled.img`
-    object-fit: cover;
+    object-fit: contain;
     width: 100%;
     height: 100%;
   `,
