@@ -1,9 +1,10 @@
-import React from 'react';
-import { useEffect } from 'react';
+import { Masonry } from 'antd';
+import React, { useContext, useEffect } from 'react';
 import styled from 'styled-components';
+
+import { GalleryCtx } from '../Gallery';
 import { isKeyboardSelect } from '../../../services/keyboardSvc';
 import { thumbsFor, ThumbWidth } from '../../../services/thumbSvc';
-import type { ViewerProps } from './types';
 
 const S = {
   Masonry: styled.div`
@@ -63,63 +64,86 @@ const S = {
   `,
 };
 
-const MasonryGrid: React.FC<ViewerProps> = ({
-  mediaItems, hasMore, fetchMore, isLoading, selectedMediaIdx, selectMedia
-}) => {
-  const sentinelRef = React.useRef<HTMLDivElement | null>(null);
+const MasonryGrid: React.FC = _ => {
+  console.info('Rendering MasonryGrid');
 
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel || !hasMore) {
-      return;
-    }
+  const {
+    media,
+    selectedMediaIdx, setSelectedMediaIdx,
+    setPrevDisplayMode, setDisplayMode
+  } = useContext(GalleryCtx);
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
+  // const sentinelRef = React.useRef<HTMLDivElement | null>(null);
+  // useEffect(() => {
+  //   const sentinel = sentinelRef.current;
+  //   if (!sentinel || !hasMore) {
+  //     return;
+  //   }
 
-        if (entry.isIntersecting && hasMore && !isLoading) {
-          fetchMore();
-        }
-      },
-      {
-        root: null,
-        rootMargin: '0px 0px 500px 0px',
-        threshold: 0.1,
-      }
-    );
+  //   const observer = new IntersectionObserver(
+  //     (entries) => {
+  //       const [entry] = entries;
 
-    observer.observe(sentinel);
+  //       if (entry.isIntersecting && hasMore && !isLoading) {
+  //         fetchMore();
+  //       }
+  //     },
+  //     {
+  //       root: null,
+  //       rootMargin: '0px 0px 500px 0px',
+  //       threshold: 0.1,
+  //     }
+  //   );
 
-    return () => {
-      observer.disconnect();
-    };
-  }, [fetchMore, hasMore, isLoading]);
+  //   observer.observe(sentinel);
 
-  return (
-    <S.Masonry>
-      {mediaItems.map((mItem, idx) => {
-        const thumbnailUri = thumbsFor(mItem)[ThumbWidth.PX_512];
+  //   return () => {
+  //     observer.disconnect();
+  //   };
+  // }, [fetchMore, hasMore, isLoading]);
 
-        return <S.GridItem
-            key={mItem.path}
-            role="button"
-            tabIndex={0}
-            aria-label={`Open ${mItem.path}`}
-            onClick={() => selectMedia(idx)}
-            onKeyDown={(event) => {
-              if (isKeyboardSelect(event)) {
-                event.preventDefault();
-                selectMedia(idx);
-              }
-            }}
-          >
-            <S.Image src={thumbnailUri} alt={mItem.path} loading="lazy" decoding="async" />
-        </S.GridItem>
-      })}
-      {hasMore && <S.Sentinel ref={sentinelRef} aria-hidden="true" />}
-    </S.Masonry>
-  );
+  console.debug('Rendering MasonryGrid with %s items', media.items.length);
+  console.debug('Selected media index: %s', selectedMediaIdx);
+
+  // return (
+  //   <S.Masonry>
+  //     {media.items.map((mItem, idx) => {
+  //       const thumbnailUri = thumbsFor(mItem)[ThumbWidth.PX_512];
+
+  //       return <S.GridItem
+  //           key={mItem.path}
+  //           role="button"
+  //           tabIndex={0}
+  //           aria-label={`Open ${mItem.path}`}
+  //           // onClick={() => selectMedia(idx)}
+  //           // onKeyDown={(event) => {
+  //           //   if (isKeyboardSelect(event)) {
+  //           //     event.preventDefault();
+  //           //     selectMedia(idx);
+  //           //   }
+  //           // }}
+  //         >
+  //           <S.Image src={thumbnailUri} alt={mItem.path} loading="lazy" decoding="async" />
+  //       </S.GridItem>
+  //     })}
+
+  //     {/* {hasMore && <S.Sentinel ref={sentinelRef} aria-hidden="true" />} */}
+  //   </S.Masonry>
+  // );
+
+  return <Masonry
+    columns={4}
+    gutter={16}
+    items={ media.items.map((mItem, idx) => ({
+      key: mItem.path,
+      data: mItem,
+    }) )}
+
+    itemRender={ ({ data: mItem }) => {
+      const thumbUri = thumbsFor(mItem)[ThumbWidth.PX_512];
+      return <S.Image src={thumbUri} alt={mItem.path} loading="lazy" decoding="async" />;
+    }}
+  />;
 };
 
 export default MasonryGrid;

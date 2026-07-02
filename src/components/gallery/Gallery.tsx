@@ -57,6 +57,7 @@ const Gallery: React.FC<GalleryProps> = ({ directoryId }) => {
 
   const media = useGalleryMedia(directoryId);
 
+  // Init gallery state to be provided by the context
   const galleryState: GalleryState = {
     media,
     displayMode, setDisplayMode,
@@ -89,14 +90,14 @@ const Gallery: React.FC<GalleryProps> = ({ directoryId }) => {
         <SquaredGrid/>
       </GalleryCtx>;
 
-    // case 'masonry':
-    //   return <>
-    //     {directoriesPage.content.length > 0 && (
-    //       <DirectoriesGrid directories={directoriesPage.content} />
-    //     )}
+    case 'masonry':
+      return <GalleryCtx value={ galleryState }>
+        {directoriesPage.content.length > 0 && (
+          <DirectoriesGrid directories={directoriesPage.content} />
+        )}
 
-    //     <MasonryGrid {...viewerProps} />
-    //   </>;
+        <MasonryGrid/>
+      </GalleryCtx>;
 
     case 'slider':
       return <GalleryCtx value={ galleryState }>
