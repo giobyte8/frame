@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect } from 'react';
+import React, { useCallback, useContext, useEffect, useRef } from 'react';
 import styled, { css } from 'styled-components';
 
 import type { GalleryMedia } from "../../../hooks/useGalleryMedia";
@@ -6,6 +6,7 @@ import Toolbar from "../Toolbar";
 import { isKeyboardSelect } from '../../../services/keyboardSvc';
 import { thumbsFor, ThumbWidth } from '../../../services/thumbSvc';
 import { GalleryCtx } from "../Gallery";
+import { useScrollToSelectedItem } from './useScrollToSelectedItem';
 
 const S = {
   Grid: styled.div`
@@ -100,6 +101,7 @@ const SquaredGrid: React.FC = _ => {
     setPrevDisplayMode, setDisplayMode
   } = useContext(GalleryCtx);
   const sentinelRef = useSentinelObserver(media);
+  const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
   const openMedia = useCallback((idx: number) => {
     setSelectedMediaIdx(idx);
@@ -107,6 +109,25 @@ const SquaredGrid: React.FC = _ => {
     setPrevDisplayMode('squared');
     setDisplayMode('slider');
   }, [setSelectedMediaIdx, setPrevDisplayMode, setDisplayMode]);
+
+  // Stores grid item references in a map, so that scroll position
+  // can be restored when rendering the grid view after Slider
+  const setItemRef = useCallback((idx: number, element: HTMLDivElement | null) => {
+    if (element) {
+      itemRefs.current.set(idx, element);
+      return;
+    }
+
+    itemRefs.current.delete(idx);
+  }, []);
+
+  // Scrolls to the selected item when the component is mounted
+  // or when the selected index changes
+  useScrollToSelectedItem({
+    selectedMediaIdx,
+    itemsLength: media.items.length,
+    itemRefs,
+  });
 
   console.debug('Rendering SquaredGrid with %s items', media.items.length);
   console.debug('Selected media index: %s', selectedMediaIdx);
@@ -123,6 +144,7 @@ const SquaredGrid: React.FC = _ => {
           aria-label={`Open ${mItem.path}`}
 
           isSelected={selectedMediaIdx === idx}
+          ref={(element) => setItemRef(idx, element)}
           onClick={() => openMedia(idx)}
           onKeyDown={(event) => {
             if (isKeyboardSelect(event)) {
